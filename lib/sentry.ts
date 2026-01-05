@@ -35,12 +35,7 @@ export function initializeSentry(): boolean {
         }
         return event;
       },
-      integrations: [
-        new Sentry.ReactNativeTracing({
-          tracingOrigins: ['localhost', /^\//],
-          routingInstrumentation: Sentry.reactNavigationIntegration(),
-        }),
-      ],
+      integrations: [],
     });
 
     return true;
@@ -103,14 +98,14 @@ export function setContext(name: string, context: Record<string, any>): void {
   Sentry.setContext(name, context);
 }
 
-export function startTransaction(name: string, operation: string): Sentry.Transaction {
-  return Sentry.startTransaction({
+export function startTransaction(name: string, operation: string): any {
+  return Sentry.startSpan({
     name,
     op: operation,
-  });
+  }, (span) => span);
 }
 
-export function withSentryScope<T>(callback: (scope: Sentry.Scope) => T): T {
+export function withSentryScope<T>(callback: (scope: Sentry.Scope) => T): T | undefined {
   return Sentry.withScope(callback);
 }
 

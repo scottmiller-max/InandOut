@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { TriangleAlert as AlertTriangle, RefreshCw } from 'lucide-react-native';
+import { captureException } from '@/lib/sentry';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -26,10 +27,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo,
+    });
+
+    // Report to Sentry
+    captureException(error, {
+      errorInfo,
+      componentStack: errorInfo?.componentStack,
     });
 
     // Call custom error handler if provided
@@ -134,7 +141,6 @@ const styles = StyleSheet.create({
   debugText: {
     fontSize: 11,
     color: '#64748b',
-    fontFamily: 'Inter-Regular',
     fontFamily: 'monospace',
   },
   retryButton: {
