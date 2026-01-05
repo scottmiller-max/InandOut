@@ -1,0 +1,346 @@
+
+> inout-moving-app@1.0.0 build:web
+> expo export --platform web
+
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL
+Starting Metro Bundler
+Static rendering is enabled. Learn more: https://docs.expo.dev/router/reference/static-rendering/
+| [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+| [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Web node_modules/expo-router/entry.js ▓░░░░░░░░░░░░░░░  9.0% (3/9)
+λ node_modules/expo-router/node/render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+| [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (13/27)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░  6.3% ( 13/118)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (15/29)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░  7.4% ( 39/190)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (15/29)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░  7.4% ( 54/217)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (15/29)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░  9.4% ( 69/225)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (15/29)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 12.6% ( 91/258)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (21/93)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 17.2% (123/298)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% ( 71/172)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 17.2% (123/298)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% ( 88/187)
+λ node_modules/expo-router/node/render.js ▓▓▓░░░░░░░░░░░░░ 22.0% (153/326)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% ( 88/187)
+λ node_modules/expo-router/node/render.js ▓▓▓▓░░░░░░░░░░░░ 28.4% (195/379)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% ( 88/187)
+λ node_modules/expo-router/node/render.js ▓▓▓▓░░░░░░░░░░░░ 29.8% (230/421)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% ( 88/187)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓░░░░░░░░░░ 39.1% (279/448)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (123/223)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓░░░░░░░░░░ 39.8% (299/485)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (184/289)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓░░░░░░░░░░ 39.8% (304/489)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (187/290)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 50.9% (365/512)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (187/290)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 54.3% (381/517)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (187/290)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.3% (408/530)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (187/290)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 432/2115)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.9% (187/290)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 461/2130)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.0% (203/324)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 485/2139)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.0% (216/338)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 485/2139)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.0% (240/393)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 485/2139)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.0% (265/426)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 486/2139)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.0% (278/441)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 488/2145)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (299/449)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 514/2155)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 625/2226)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% ( 806/2226)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% (1078/2226)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% (1370/2226)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.6% (1645/2226)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 75.9% (1939/2226)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.0% (302/454)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2117/2306)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 48.0% (323/467)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2137/2314)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 50.5% (368/520)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2137/2314)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 56.1% (403/538)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2141/2317)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.8% (420/543)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2166/2365)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 60.5% (423/544)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2194/2424)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 60.5% (423/544)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2224/2484)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 432/2111)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2266/2511)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 460/2131)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2316/2557)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 514/2170)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2316/2557)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 542/2202)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2368/2586)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 542/2202)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2420/2609)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 542/2202)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2477/2653)
+| Dynamic import at line 123: require(s). This module may not work as intended when deployed to a runtime.
+| Dynamic import at line 19: require(moduleId). This module may not work as intended when deployed to a runtime.
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 575/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 697/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 802/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% ( 937/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% (1079/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% (1265/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% (1447/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% (1618/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 62.1% (1754/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 76.1% (1941/2225)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2488/2664)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.7% (2110/2228)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2501/2685)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.0% (2135/2238)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2556/2748)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2204/2357)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2564/2761)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2225/2413)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2603/2799)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2225/2413)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.0% (2632/2805)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2228/2415)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 90.5% (2688/2829)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2251/2436)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.6% (2748/2856)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2282/2466)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 93.3% (2758/2856)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2362/2500)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 93.4% (2760/2856)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2378/2507)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 93.6% (2780/2874)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2411/2538)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95.2% (2815/2885)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2437/2552)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.6% (2856/2917)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.1% (2501/2623)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.6% (2868/2919)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.1% (2518/2624)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.9% (2874/2919)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 93.2% (2537/2628)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.0% (2887/2939)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 93.5% (2547/2635)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.4% (2916/2957)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.1% (2610/2663)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.4% (2917/2959)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.1% (2629/2668)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 98.4% (2943/2967)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.6% (2664/2706)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.5% (2965/2973)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.7% (2695/2727)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2971/2973)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 98.4% (2726/2748)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2973/2973)
+λ Bundled 263715ms node_modules/expo-router/node/render.js (2973 modules)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.1% (2774/2796)
+Web Bundled 267202ms node_modules/expo-router/entry.js (2805 modules)
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+[expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+λ  WARN  [Layout children]: No route named "admin/crm" exists in nested children: [
+  '+not-found',
+  'index',
+  '_sitemap',
+  '(tabs)',
+  'admin',
+  'auth/verified'
+] 
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2805/2805)
+
+› web bundles (1):
+_expo/static/js/web/entry-ac722ba6480d279d78625720c0fbee82.js (4.24 MB)
+
+› Static routes (19):
+/crm (54.5 kB)
+/ (index) (27.2 kB)
+/quote (64.2 kB)
+/track (47.6 kB)
+/profile (38.8 kB)
+/_sitemap (40.3 kB)
+/messages (41 kB)
+/services (58 kB)
+/admin/crm (27.2 kB)
+/+not-found (28.5 kB)
+/(tabs)/crm (54.5 kB)
+/admin (27.2 kB)
+/(tabs) (39.1 kB)
+/(tabs)/quote (64.2 kB)
+/(tabs)/track (47.6 kB)
+/auth/verified (28.4 kB)
+/(tabs)/profile (38.8 kB)
+/(tabs)/messages (41 kB)
+/(tabs)/services (58 kB)
+
+Exported: dist

@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "IN&OUT Moving",
+    "slug": "inout-moving-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.inandout.moving"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.inandout.moving"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "output": "static",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-router",
+        {
+          "origin": "https://app.inandoutmovin.com/"
+        }
+      ]
+    ],
+    "scheme": "inout-moving",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

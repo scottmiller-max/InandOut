@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IN&OUT Moving - Professional Moving Services with AI Technology</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .app-badges {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .app-badge {
+            display: inline-block;
+            background: #000;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .app-badge:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background: #f8fafc;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .feature-card p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        /* App Screenshots */
+        .screenshots {
+            padding: 100px 0;
+        }
+        
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .screenshot {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .screenshot img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .screenshot h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .screenshot p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        /* Pricing */
+        .pricing {
+            padding: 100px 0;
+            background: #f8fafc;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        
+        .pricing-card.featured {
+            border: 2px solid #2563eb;
+            transform: scale(1.05);
+        }
+        
+        .pricing-badge {
+            background: #2563eb;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+        
+        .price-period {
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+        
+        .pricing-features li {
+            padding: 8px 0;
+            color: #64748b;
+        }
+        
+        .pricing-features li:before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .cta-button {
+            background: #2563eb;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        
+        .cta-button:hover {
+            background: #1d4ed8;
+        }
+        
+        /* Contact Form */
+        .contact {
+            padding: 100px 0;
+        }
+        
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        .contact-info h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        
+        .contact-info p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+        }
+        
+        .contact-features {
+            list-style: none;
+        }
+        
+        .contact-features li {
+            padding: 12px 0;
+            font-size: 1.1rem;
+        }
+        
+        .contact-features li:before {
+            content: "→";
+            color: #2563eb;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        
+        .tally-form {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1e293b;
+            color: white;
+            padding: 60px 0 30px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .footer-section p,
+        .footer-section a {
+            color: #94a3b8;
+            text-decoration: none;
+            line-height: 1.8;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 30px;
+            color: #94a3b8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <section class="header">
+        <div class="container">
+            <h1>IN&OUT Moving</h1>
+            <p>Professional moving services powered by AI technology and real-time tracking</p>
+            <div class="app-badges">
+                <a href="#" class="app-badge">📱 Download for iOS</a>
+                <a href="#" class="app-badge">🤖 Download for Android</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose IN&OUT Moving?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered Quotes</h3>
+                    <p>Get instant, accurate moving estimates using our advanced AI technology. No waiting, no surprises.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3>Real-Time GPS Tracking</h3>
+                    <p>Track your moving truck in real-time with live GPS updates and estimated arrival times.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile App Control</h3>
+                    <p>Manage your entire move from your phone. Schedule, track, communicate, and pay all in one app.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Automated Updates</h3>
+                    <p>Stay informed with automatic text and email notifications throughout your moving process.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎥</div>
+                    <h3>Video Consultations</h3>
+                    <p>Get personalized quotes through video calls with our moving experts for maximum accuracy.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Professional Team</h3>
+                    <p>Experienced, friendly movers who treat your belongings with care and respect.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Screenshots -->
+    <section class="screenshots">
+        <div class="container">
+            <h2 class="section-title">See the App in Action</h2>
+            <div class="screenshots-grid">
+                <div class="screenshot">
+                    <img src="https://images.pexels.com/photos/7464230/pexels-photo-7464230.jpeg" alt="Move Dashboard">
+                    <h4>Move Dashboard</h4>
+                    <p>Track your move progress and timeline</p>
+                </div>
+                <div class="screenshot">
+                    <img src="https://images.pexels.com/photos/4246209/pexels-photo-4246209.jpeg" alt="GPS Tracking">
+                    <h4>Live GPS Tracking</h4>
+                    <p>See exactly where your moving truck is</p>
+                </div>
+                <div class="screenshot">
+                    <img src="https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg" alt="Team Communication">
+                    <h4>Team Communication</h4>
+                    <p>Chat directly with your moving team</p>
+                </div>
+                <div class="screenshot">
+                    <img src="https://images.pexels.com/photos/4246266/pexels-photo-4246266.jpeg" alt="AI Quote System">
+                    <h4>AI Quote System</h4>
+                    <p>Get instant estimates with AI technology</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing">
+        <div class="container">
+            <h2 class="section-title">Flexible Pricing Options</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Flat Rate</h3>
+                    <div class="price">$899</div>
+                    <div class="price-period">One-time payment</div>
+                    <ul class="pricing-features">
+                        <li>Professional packing</li>
+                        <li>Transportation</li>
+                        <li>Basic insurance</li>
+                        <li>GPS tracking</li>
+                        <li>Text/email updates</li>
+                    </ul>
+                    <a href="#contact" class="cta-button">Get Started</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <h3>Premium Monthly</h3>
+                    <div class="price">$149</div>
+                    <div class="price-period">Per month</div>
+                    <ul class="pricing-features">
+                        <li>Everything in Flat Rate</li>
+                        <li>Premium insurance</li>
+                        <li>24/7 priority support</li>
+                        <li>Storage included</li>
+                        <li>Multiple moves per month</li>
+                        <li>Video consultations</li>
+                    </ul>
+                    <a href="#contact" class="cta-button">Start Free Trial</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">Custom</div>
+                    <div class="price-period">For businesses</div>
+                    <ul class="pricing-features">
+                        <li>Custom pricing</li>
+                        <li>Dedicated account manager</li>
+                        <li>Bulk move discounts</li>
+                        <li>Advanced reporting</li>
+                        <li>API integration</li>
+                    </ul>
+                    <a href="#contact" class="cta-button">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2>Ready to Move?</h2>
+                    <p>Get started with IN&OUT Moving today. Fill out our quick form to receive your personalized quote and schedule your move.</p>
+                    <ul class="contact-features">
+                        <li>Free, no-obligation quotes</li>
+                        <li>Same-day response guaranteed</li>
+                        <li>Flexible scheduling options</li>
+                        <li>Professional, insured team</li>
+                    </ul>
+                </div>
+                <div class="tally-form">
+                    <!-- Replace this iframe with your actual Tally form embed code -->
+                    <iframe 
+                        src="https://tally.so/embed/wMZAKE?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" 
+                        width="100%" 
+                        height="500" 
+                        frameborder="0" 
+                        marginheight="0" 
+                        marginwidth="0" 
+                        title="IN&OUT Moving Quote Request">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>IN&OUT Moving</h3>
+                    <p>Professional moving services powered by AI technology. Making your move stress-free and efficient.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <p><a href="#">Residential Moving</a></p>
+                    <p><a href="#">Commercial Moving</a></p>
+                    <p><a href="#">Long Distance</a></p>
+                    <p><a href="#">Storage Solutions</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <p><a href="#">Help Center</a></p>
+                    <p><a href="#">Contact Us</a></p>
+                    <p><a href="#">Track Your Move</a></p>
+                    <p><a href="#">Insurance Claims</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <p><a href="#">About Us</a></p>
+                    <p><a href="#">Careers</a></p>
+                    <p><a href="#">Privacy Policy</a></p>
+                    <p><a href="#">Terms of Service</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 IN&OUT Moving. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
