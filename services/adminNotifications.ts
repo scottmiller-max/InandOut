@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { notificationService } from './notifications';
+import { slackMessaging } from './slackMessaging';
 
 export interface AdminAlert {
   id: string;
@@ -42,10 +43,44 @@ export const adminNotificationService = {
         console.error('Store admin alert error:', error);
       }
 
-      // Send immediate notification to admin team
-      console.log('🔔 ADMIN ALERT:', alert.title, '-', alert.message);
+      console.log('ADMIN ALERT:', alert.title, '-', alert.message);
 
-      // In production, integrate with Slack, email, or push notifications
+      await slackMessaging.sendNotification({
+        text: `New Consultation Booked`,
+        attachments: [
+          {
+            fallback: alert.message,
+            color: '#3b82f6',
+            title: alert.title,
+            text: alert.message,
+            fields: [
+              {
+                title: 'Customer',
+                value: consultationData.customerName,
+                short: true,
+              },
+              {
+                title: 'Type',
+                value: consultationData.consultationType,
+                short: true,
+              },
+              {
+                title: 'Date',
+                value: new Date(consultationData.consultationDate).toLocaleDateString(),
+                short: true,
+              },
+              {
+                title: 'Estimated Cost',
+                value: consultationData.estimatedCost ? `$${consultationData.estimatedCost}` : 'TBD',
+                short: true,
+              },
+            ],
+            footer: 'IN&OUT Moving Admin',
+            ts: Math.floor(Date.now() / 1000),
+          },
+        ],
+      });
+
       return true;
     } catch (error) {
       console.error('Send consultation booked alert error:', error);
@@ -84,14 +119,18 @@ export const adminNotificationService = {
         console.error('Store admin alert error:', error);
       }
 
-      // Send urgent notification to Family Partner
-      console.log('🚨 URGENT ADMIN ALERT:', alert.title, '-', alert.message);
-      console.log('📋 Booking Details:', {
-        customer: `${bookingData.customerName} (${bookingData.customerEmail})`,
-        detectedItems: bookingData.detectedItems,
-        estimatedCost: `$${bookingData.estimatedCost}`,
-        requiresApproval: true,
-      });
+      console.log('URGENT ADMIN ALERT:', alert.title, '-', alert.message);
+
+      await slackMessaging.sendUrgentAlert(
+        'AI Booking Requires Family Partner Approval',
+        alert.message,
+        {
+          Customer: `${bookingData.customerName} (${bookingData.customerEmail})`,
+          'Estimated Cost': `$${bookingData.estimatedCost}`,
+          'Detected Items': JSON.stringify(bookingData.detectedItems).slice(0, 100),
+          Status: 'Pending Approval',
+        }
+      );
 
       return true;
     } catch (error) {
