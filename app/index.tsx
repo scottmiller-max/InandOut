@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   bottomContent: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 270,
     alignItems: 'center',
   },
   tapText: {
