@@ -41,26 +41,6 @@ export const authService = {
 
       if (error) throw error;
 
-      // Create user profile in users table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-
-        // Create default user role (customer)
-        await roleService.createUserRole(data.user.id, 'customer');
-      }
-
       return { user: data.user, session: data.session };
     } catch (error) {
       console.error('Sign up error:', error);
@@ -163,8 +143,12 @@ export const authService = {
   // Reset password
   resetPassword: async (email: string) => {
     try {
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/reset-password`
+        : 'https://app.inandoutmovin.com/auth/reset-password';
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
       if (error) throw error;
     } catch (error) {
