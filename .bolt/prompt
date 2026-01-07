@@ -11,4 +11,5 @@ If missing → label as Not Implemented or Partial.
 After every sprint, perform a QA audit using ALL of the following:
 File inspection-Database schema + RLS verification
 Build analysis (warnings ≠ success)-Code review
-Provide a confidence score and list unverified items.
+Provide a confidence score and list unverified items. Any infrastructure claim must include:
+File name(s)-Deployment location-Trigger method-Manual test instructions
