@@ -22,12 +22,6 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (user) {
       loadProfileData();
-
-      // Show email verification banner if email not confirmed
-      if (user.email && !user.email_confirmed_at) {
-        setShowEmailBanner(true);
-        setTimeout(() => setShowEmailBanner(false), 10000);
-      }
     } else {
       setLoading(false);
     }
@@ -38,7 +32,7 @@ export default function ProfileScreen() {
 
     try {
       setLoading(true);
-      const profile = await profileService.getFullProfile(user.id);
+      const profile = await profileService.getProfileData(user.id);
       setProfileData(profile);
     } catch (error) {
       console.error('Load profile error:', error);
@@ -136,7 +130,7 @@ export default function ProfileScreen() {
               <Calendar size={24} color="#2563eb" />
               <Text style={styles.infoLabel}>Member Since</Text>
               <Text style={styles.infoValue}>
-                {new Date(user.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                {new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               </Text>
             </View>
             <View style={styles.infoCard}>
@@ -191,7 +185,7 @@ export default function ProfileScreen() {
 
         {/* Payment Information */}
         <View style={styles.section}>
-          <PaymentSection />
+          <PaymentSection outstandingBalance={profileData?.outstandingBalance || 0} />
         </View>
 
         {/* Notification Preferences */}
@@ -231,12 +225,7 @@ export default function ProfileScreen() {
 
       {/* Riley AI Assistant Widget */}
       <View style={styles.rileyContainer}>
-        <RileyWidget
-          size="medium"
-          contextData={{
-            userId: user?.id,
-          }}
-        />
+        <RileyWidget size="medium" />
       </View>
     </SafeAreaView>
   );

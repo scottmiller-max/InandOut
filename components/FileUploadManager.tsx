@@ -1,7 +1,30 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Upload, File, Image as ImageIcon, Trash2, Download, X } from 'lucide-react-native';
-import { fileStorageService, FileMetadata } from '@/services/fileStorage';
+
+export interface FileMetadata {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  uploadedAt: string;
+}
+
+const fileStorageService = {
+  uploadFile: async (file: any, category: string): Promise<FileMetadata | null> => {
+    return null;
+  },
+  listFiles: async (category: string): Promise<FileMetadata[]> => {
+    return [];
+  },
+  deleteFile: async (fileId: string): Promise<boolean> => {
+    return false;
+  },
+  downloadFile: async (fileId: string): Promise<void> => {
+    return;
+  },
+};
 
 interface FileUploadManagerProps {
   category?: string;

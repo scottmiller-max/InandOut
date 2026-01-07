@@ -7,7 +7,7 @@ import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
 import { DateTimeDisplay } from '@/components/DateTimeDisplay';
 import { NotificationPreferences } from '@/components/NotificationPreferences';
-import { PhotoLightbox } from '@/components/PhotoLightbox';
+import PhotoLightbox from '@/components/PhotoLightbox';
 import { enhancedMessagingService } from '@/services/enhancedMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -91,7 +91,7 @@ export default function MessagesScreen() {
 
       {/* Lightbox */}
       {showLightbox && selectedImage && (
-        <PhotoLightbox imageUri={selectedImage} onClose={closeLightbox} />
+        <PhotoLightbox visible={showLightbox} imageUri={selectedImage} onClose={closeLightbox} />
       )}
 
       {/* New Message Modal */}
@@ -99,6 +99,10 @@ export default function MessagesScreen() {
         <NewMessageThreadModal
           visible={showNewThreadModal}
           onClose={() => setShowNewThreadModal(false)}
+          onThreadCreated={(threadId) => {
+            setShowNewThreadModal(false);
+            loadMessageThreads();
+          }}
         />
       )}
 

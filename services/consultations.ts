@@ -67,7 +67,7 @@ export const consultationService = {
         customerName: consultationData.customerName,
         customerEmail: consultationData.customerEmail,
         consultationDate: consultationData.scheduledDate || new Date().toISOString(),
-        consultationType: consultationData.consultationType,
+        consultationType: consultationData.consultationType === 'video' ? 'video' : 'ai',
         estimatedCost: consultationData.estimatedCost,
       });
 

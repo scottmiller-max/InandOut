@@ -284,7 +284,6 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     borderRadius: 4,
-    transition: 'width 0.3s ease',
   },
   checklistContainer: {
     maxHeight: 400,

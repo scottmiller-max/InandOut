@@ -7,7 +7,7 @@ import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
 import { DateTimeDisplay } from '@/components/DateTimeDisplay';
 import { NotificationPreferences } from '@/components/NotificationPreferences';
-import { PhotoLightbox } from '@/components/PhotoLightbox';
+import PhotoLightbox from '@/components/PhotoLightbox';
 import { enhancedMessagingService } from '@/services/enhancedMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -158,12 +158,13 @@ export default function ConsultationScheduler() {
           </View>
           
           <TouchableOpacity style={styles.conversationCard}>
-            <Image
-              source={{ uri: 'https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg' }}
-              style={styles.avatar}
-              resizeMode="cover"
-              onPress={() => handleImagePress('https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg')}
-            />
+            <TouchableOpacity onPress={() => handleImagePress('https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg')}>
+              <Image
+                source={{ uri: 'https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg' }}
+                style={styles.avatar}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
             <View style={styles.conversationContent}>
               <Text style={styles.conversationName}>Mike Rodriguez - Team Leader</Text>
               <Text style={styles.lastMessage}>We're 15 minutes away from your location</Text>

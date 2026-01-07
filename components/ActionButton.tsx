@@ -1,9 +1,8 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Video as LucideIcon } from 'lucide-react-native';
 
 interface ActionButtonProps {
-  icon: LucideIcon;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
   title: string;
   onPress: () => void;
   style?: ViewStyle;

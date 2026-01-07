@@ -366,6 +366,10 @@ export const crmService = {
         customer = customerData;
       }
 
+      if (!customer) {
+        throw new Error('Failed to create or find customer');
+      }
+
       // Create job
       const jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'> = {
         customerId: customer.id,

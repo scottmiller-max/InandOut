@@ -648,4 +648,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     lineHeight: 20,
   },
+  centeredForm: {
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
+  },
 });

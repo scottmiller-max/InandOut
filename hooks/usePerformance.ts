@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { Platform, InteractionManager } from 'react-native';
 
 export const usePerformance = () => {

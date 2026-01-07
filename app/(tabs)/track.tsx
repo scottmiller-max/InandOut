@@ -159,9 +159,8 @@ export default function TrackScreen() {
 
       {/* Riley AI Assistant Widget */}
       <View style={styles.rileyContainer}>
-        <RileyWidget 
+        <RileyWidget
           contextData={{
-            jobTracking,
             fobData: jobTracking,
             checklistData: jobTracking,
           }}

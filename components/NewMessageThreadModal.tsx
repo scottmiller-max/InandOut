@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Send, User, MessageCircle } from 'lucide-react-native';
 import { enhancedMessagingService } from '@/services/enhancedMessaging';
@@ -185,3 +185,131 @@ export const NewMessageThreadModal: React.FC<NewMessageThreadModalProps> = ({
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    backgroundColor: '#ffffff',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1e293b',
+    fontFamily: 'Inter-Bold',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 12,
+  },
+  recipientOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  recipientButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    gap: 8,
+  },
+  recipientButtonActive: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  recipientText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontFamily: 'Inter-Medium',
+  },
+  recipientTextActive: {
+    color: '#ffffff',
+  },
+  threadTypeOptions: {
+    gap: 12,
+  },
+  threadTypeButton: {
+    padding: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  threadTypeButtonActive: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#2563eb',
+  },
+  threadTypeText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1e293b',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 4,
+  },
+  threadTypeTextActive: {
+    color: '#2563eb',
+  },
+  threadTypeDescription: {
+    fontSize: 13,
+    color: '#64748b',
+    fontFamily: 'Inter-Regular',
+  },
+  threadTypeDescriptionActive: {
+    color: '#3b82f6',
+  },
+  messageInput: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 16,
+    fontSize: 15,
+    color: '#1e293b',
+    fontFamily: 'Inter-Regular',
+    minHeight: 120,
+  },
+  sendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#94a3b8',
+    opacity: 0.6,
+  },
+  sendButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    fontFamily: 'Inter-SemiBold',
+  },
+});

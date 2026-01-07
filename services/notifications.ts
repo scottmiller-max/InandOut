@@ -10,6 +10,8 @@ if (Platform.OS !== 'web') {
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
     }),
   });
 }
@@ -105,6 +107,8 @@ export const notificationService = {
         fromAddress: job.from_address,
         toAddress: job.to_address,
         estimatedCost: `$${job.estimated_total}`,
+        userId: customer.user_id,
+        jobId: jobId,
       });
 
       await notificationService.scheduleNotification(
@@ -134,6 +138,8 @@ export const notificationService = {
         jobNumber: job.job_number,
         status: status.toUpperCase(),
         message,
+        userId: customer.user_id,
+        jobId: jobId,
       });
 
       await notificationService.scheduleNotification(
@@ -175,6 +181,8 @@ export const notificationService = {
         moveDate,
         fromAddress: job.from_address,
         toAddress: job.to_address,
+        userId: teamLeadId,
+        jobId: jobId,
       });
     } catch (error) {
       console.error('Error sending team assignment notification:', error);
@@ -200,6 +208,8 @@ export const notificationService = {
         amount: `$${amount.toFixed(2)}`,
         paymentMethod,
         transactionId,
+        userId: customer.user_id,
+        jobId: jobId,
       });
 
       await notificationService.scheduleNotification(

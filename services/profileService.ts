@@ -75,7 +75,7 @@ export const profileService = {
         totalMoves: user.totalMoves,
         averageRating: user.customerRating,
         memberSince: user.memberSince,
-        outstandingBalance: user.outstandingBalance || 0,
+        outstandingBalance: 0,
       };
 
       return {

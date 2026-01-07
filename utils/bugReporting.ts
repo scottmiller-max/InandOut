@@ -61,10 +61,10 @@ export const bugReportingService = {
   },
 
   // Performance monitoring
-  measurePerformance: (operationName: string, operation: () => Promise<any>) => {
+  measurePerformance: (operationName: string, operation: (...args: any[]) => Promise<any>) => {
     return async (...args: any[]) => {
       const startTime = Date.now();
-      
+
       try {
         const result = await operation(...args);
         const duration = Date.now() - startTime;

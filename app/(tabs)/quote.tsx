@@ -394,14 +394,7 @@ export default function QuoteScreen() {
 
       {/* Riley AI Assistant Widget */}
       <View style={styles.rileyContainer}>
-        <RileyWidget 
-          contextData={{
-            fromAddress,
-            toAddress,
-            moveDate,
-            homeSize,
-          }}
-        />
+        <RileyWidget />
       </View>
     </SafeAreaView>
   );

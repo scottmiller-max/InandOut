@@ -287,7 +287,8 @@ export const enhancedFobService = {
       if (error) throw error;
 
       // Create milestone update based on status
-      const statusMilestones = {
+      const statusMilestones: Record<string, { type: string; message: string }> = {
+        'idle': { type: 'status', message: 'Team is preparing for your move' },
         'en_route': { type: 'departure', message: 'Team is en route to your location' },
         'at_pickup': { type: 'arrival', message: 'Team has arrived at pickup location' },
         'loading': { type: 'loading_start', message: 'Loading has begun' },
