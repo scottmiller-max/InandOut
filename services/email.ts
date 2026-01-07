@@ -13,7 +13,186 @@ export interface SendEmailResult {
   error?: string;
 }
 
+export interface NotificationContext {
+  jobId?: string;
+  userId: string;
+  notificationType: 'booking_confirmation' | 'status_update' | 'team_assignment' | 'payment_receipt';
+}
+
+const THROTTLE_WINDOW_MINUTES = 15;
+
 export const emailService = {
+  checkUserPreferences: async (userId: string, notificationType: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_notification_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching user preferences:', error);
+        return true;
+      }
+
+      if (!data) {
+        return true;
+      }
+
+      if (!data.email_enabled) {
+        return false;
+      }
+
+      switch (notificationType) {
+        case 'booking_confirmation':
+          return data.booking_confirmations;
+        case 'status_update':
+          return data.status_updates;
+        case 'team_assignment':
+          return data.team_assignments;
+        case 'payment_receipt':
+          return data.payment_receipts;
+        default:
+          return true;
+      }
+    } catch (error) {
+      console.error('Error checking user preferences:', error);
+      return true;
+    }
+  },
+
+  checkThrottle: async (userId: string, jobId: string | undefined, notificationType: string): Promise<{ canSend: boolean; reason?: string }> => {
+    try {
+      if (!jobId) {
+        return { canSend: true };
+      }
+
+      const { data, error } = await supabase
+        .from('email_throttle_log')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('job_id', jobId)
+        .eq('notification_type', notificationType)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking throttle:', error);
+        return { canSend: true };
+      }
+
+      if (!data) {
+        return { canSend: true };
+      }
+
+      const lastSentAt = new Date(data.last_sent_at);
+      const now = new Date();
+      const minutesSinceLastSent = (now.getTime() - lastSentAt.getTime()) / (1000 * 60);
+
+      if (minutesSinceLastSent < THROTTLE_WINDOW_MINUTES) {
+        return {
+          canSend: false,
+          reason: `Email throttled. Last sent ${Math.round(minutesSinceLastSent)} minutes ago. Wait ${Math.round(THROTTLE_WINDOW_MINUTES - minutesSinceLastSent)} more minutes.`
+        };
+      }
+
+      return { canSend: true };
+    } catch (error) {
+      console.error('Error checking throttle:', error);
+      return { canSend: true };
+    }
+  },
+
+  updateThrottleLog: async (userId: string, jobId: string, notificationType: string): Promise<void> => {
+    try {
+      const { data: existing } = await supabase
+        .from('email_throttle_log')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('job_id', jobId)
+        .eq('notification_type', notificationType)
+        .maybeSingle();
+
+      const now = new Date().toISOString();
+
+      if (existing) {
+        await supabase
+          .from('email_throttle_log')
+          .update({
+            last_sent_at: now,
+            send_count: existing.send_count + 1,
+            updated_at: now,
+          })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('email_throttle_log')
+          .insert({
+            user_id: userId,
+            job_id: jobId,
+            notification_type: notificationType,
+            last_sent_at: now,
+            send_count: 1,
+            window_start: now,
+          });
+      }
+    } catch (error) {
+      console.error('Error updating throttle log:', error);
+    }
+  },
+
+  logNotification: async (
+    context: NotificationContext,
+    status: 'pending' | 'sent' | 'failed',
+    error?: string,
+    metadata?: any
+  ): Promise<string | null> => {
+    try {
+      const { data, error: insertError } = await supabase
+        .from('job_notifications')
+        .insert({
+          job_id: context.jobId || null,
+          user_id: context.userId,
+          notification_type: context.notificationType,
+          channel: 'email',
+          status,
+          error_message: error || null,
+          sent_at: status === 'sent' ? new Date().toISOString() : null,
+          metadata: metadata || {},
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error('Error logging notification:', insertError);
+        return null;
+      }
+
+      return data?.id || null;
+    } catch (error) {
+      console.error('Error logging notification:', error);
+      return null;
+    }
+  },
+
+  updateNotificationStatus: async (
+    notificationId: string,
+    status: 'sent' | 'failed',
+    error?: string
+  ): Promise<void> => {
+    try {
+      await supabase
+        .from('job_notifications')
+        .update({
+          status,
+          error_message: error || null,
+          sent_at: status === 'sent' ? new Date().toISOString() : null,
+        })
+        .eq('id', notificationId);
+    } catch (error) {
+      console.error('Error updating notification status:', error);
+    }
+  },
+
   sendEmail: async (params: SendEmailParams): Promise<SendEmailResult> => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -55,6 +234,57 @@ export const emailService = {
     }
   },
 
+  sendEmailWithContext: async (
+    params: SendEmailParams,
+    context: NotificationContext
+  ): Promise<SendEmailResult> => {
+    const preferencesEnabled = await emailService.checkUserPreferences(
+      context.userId,
+      context.notificationType
+    );
+
+    if (!preferencesEnabled) {
+      console.log('Email notifications disabled for user:', context.userId);
+      return { success: false, error: 'User has disabled email notifications' };
+    }
+
+    if (context.jobId) {
+      const throttleCheck = await emailService.checkThrottle(
+        context.userId,
+        context.jobId,
+        context.notificationType
+      );
+
+      if (!throttleCheck.canSend) {
+        console.log('Email throttled:', throttleCheck.reason);
+        await emailService.logNotification(context, 'failed', throttleCheck.reason);
+        return { success: false, error: throttleCheck.reason };
+      }
+    }
+
+    const notificationId = await emailService.logNotification(context, 'pending');
+
+    const result = await emailService.sendEmail(params);
+
+    if (notificationId) {
+      await emailService.updateNotificationStatus(
+        notificationId,
+        result.success ? 'sent' : 'failed',
+        result.error
+      );
+    }
+
+    if (result.success && context.jobId) {
+      await emailService.updateThrottleLog(
+        context.userId,
+        context.jobId,
+        context.notificationType
+      );
+    }
+
+    return result;
+  },
+
   sendBookingConfirmation: async (params: {
     customerEmail: string;
     customerName: string;
@@ -63,6 +293,8 @@ export const emailService = {
     fromAddress: string;
     toAddress: string;
     estimatedCost: string;
+    userId: string;
+    jobId: string;
   }): Promise<SendEmailResult> => {
     const html = `
       <!DOCTYPE html>
@@ -144,13 +376,20 @@ Phone: +1 (808) 755-2527
 Email: support@inandoutmovin.com
     `;
 
-    return emailService.sendEmail({
-      to: params.customerEmail,
-      subject: `Booking Confirmed - Job #${params.jobNumber}`,
-      html,
-      text,
-      replyTo: 'support@inandoutmovin.com',
-    });
+    return emailService.sendEmailWithContext(
+      {
+        to: params.customerEmail,
+        subject: `Booking Confirmed - Job #${params.jobNumber}`,
+        html,
+        text,
+        replyTo: 'support@inandoutmovin.com',
+      },
+      {
+        userId: params.userId,
+        jobId: params.jobId,
+        notificationType: 'booking_confirmation',
+      }
+    );
   },
 
   sendJobStatusUpdate: async (params: {
@@ -159,6 +398,8 @@ Email: support@inandoutmovin.com
     jobNumber: string;
     status: string;
     message: string;
+    userId: string;
+    jobId: string;
   }): Promise<SendEmailResult> => {
     const html = `
       <!DOCTYPE html>
@@ -217,13 +458,20 @@ Phone: +1 (808) 755-2527
 Email: support@inandoutmovin.com
     `;
 
-    return emailService.sendEmail({
-      to: params.customerEmail,
-      subject: `Job Update - #${params.jobNumber}`,
-      html,
-      text,
-      replyTo: 'support@inandoutmovin.com',
-    });
+    return emailService.sendEmailWithContext(
+      {
+        to: params.customerEmail,
+        subject: `Job Update - #${params.jobNumber}`,
+        html,
+        text,
+        replyTo: 'support@inandoutmovin.com',
+      },
+      {
+        userId: params.userId,
+        jobId: params.jobId,
+        notificationType: 'status_update',
+      }
+    );
   },
 
   sendTeamAssignment: async (params: {
@@ -233,6 +481,8 @@ Email: support@inandoutmovin.com
     moveDate: string;
     fromAddress: string;
     toAddress: string;
+    userId: string;
+    jobId: string;
   }): Promise<SendEmailResult> => {
     const html = `
       <!DOCTYPE html>
@@ -294,13 +544,20 @@ To: ${params.toAddress}
 Please review the job details in the admin dashboard and contact dispatch if you have any questions.
     `;
 
-    return emailService.sendEmail({
-      to: params.teamEmail,
-      subject: `New Job Assignment - #${params.jobNumber}`,
-      html,
-      text,
-      replyTo: 'dispatch@inandoutmovin.com',
-    });
+    return emailService.sendEmailWithContext(
+      {
+        to: params.teamEmail,
+        subject: `New Job Assignment - #${params.jobNumber}`,
+        html,
+        text,
+        replyTo: 'dispatch@inandoutmovin.com',
+      },
+      {
+        userId: params.userId,
+        jobId: params.jobId,
+        notificationType: 'team_assignment',
+      }
+    );
   },
 
   sendPaymentReceipt: async (params: {
@@ -310,6 +567,8 @@ Please review the job details in the admin dashboard and contact dispatch if you
     amount: string;
     paymentMethod: string;
     transactionId: string;
+    userId: string;
+    jobId: string;
   }): Promise<SendEmailResult> => {
     const html = `
       <!DOCTYPE html>
@@ -386,12 +645,19 @@ Phone: +1 (808) 755-2527
 Email: support@inandoutmovin.com
     `;
 
-    return emailService.sendEmail({
-      to: params.customerEmail,
-      subject: `Payment Receipt - Job #${params.jobNumber}`,
-      html,
-      text,
-      replyTo: 'billing@inandoutmovin.com',
-    });
+    return emailService.sendEmailWithContext(
+      {
+        to: params.customerEmail,
+        subject: `Payment Receipt - Job #${params.jobNumber}`,
+        html,
+        text,
+        replyTo: 'billing@inandoutmovin.com',
+      },
+      {
+        userId: params.userId,
+        jobId: params.jobId,
+        notificationType: 'payment_receipt',
+      }
+    );
   },
 };

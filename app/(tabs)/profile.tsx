@@ -10,6 +10,7 @@ import { DocumentsSection } from '@/components/DocumentsSection';
 import { PaymentSection } from '@/components/PaymentSection';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { RileyWidget } from '@/components/RileyWidget';
+import { NotificationPreferences } from '@/components/NotificationPreferences';
 import { profileService } from '@/services/profileService';
 
 export default function ProfileScreen() {
@@ -191,6 +192,12 @@ export default function ProfileScreen() {
         {/* Payment Information */}
         <View style={styles.section}>
           <PaymentSection />
+        </View>
+
+        {/* Notification Preferences */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notification Preferences</Text>
+          <NotificationPreferences />
         </View>
 
         {/* Settings Links */}

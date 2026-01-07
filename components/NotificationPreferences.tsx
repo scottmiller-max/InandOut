@@ -5,12 +5,13 @@ import { supabase } from '@/services/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NotificationSettings {
-  smsUpdates: boolean;
-  emailNotifications: boolean;
-  pushNotifications: boolean;
-  milestoneUpdates: boolean;
-  etaUpdates: boolean;
-  teamMessages: boolean;
+  emailEnabled: boolean;
+  pushEnabled: boolean;
+  smsEnabled: boolean;
+  bookingConfirmations: boolean;
+  statusUpdates: boolean;
+  teamAssignments: boolean;
+  paymentReceipts: boolean;
 }
 
 interface NotificationPreferencesProps {
@@ -20,12 +21,13 @@ interface NotificationPreferencesProps {
 export const NotificationPreferences: React.FC<NotificationPreferencesProps> = ({ style }) => {
   const { user } = useAuth();
   const [settings, setSettings] = useState<NotificationSettings>({
-    smsUpdates: true,
-    emailNotifications: true,
-    pushNotifications: false,
-    milestoneUpdates: true,
-    etaUpdates: true,
-    teamMessages: true,
+    emailEnabled: true,
+    pushEnabled: true,
+    smsEnabled: false,
+    bookingConfirmations: true,
+    statusUpdates: true,
+    teamAssignments: true,
+    paymentReceipts: true,
   });
   const [loading, setLoading] = useState(false);
 
@@ -37,20 +39,27 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
     if (!user) return;
 
     try {
-      // Load user notification preferences from database
       const { data, error } = await supabase
-        .from('users')
-        .select('notification_preferences')
-        .eq('id', user.id)
-        .single();
+        .from('user_notification_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Load settings error:', error);
         return;
       }
 
-      if (data?.notification_preferences) {
-        setSettings(data.notification_preferences);
+      if (data) {
+        setSettings({
+          emailEnabled: data.email_enabled,
+          pushEnabled: data.push_enabled,
+          smsEnabled: data.sms_enabled,
+          bookingConfirmations: data.booking_confirmations,
+          statusUpdates: data.status_updates,
+          teamAssignments: data.team_assignments,
+          paymentReceipts: data.payment_receipts,
+        });
       }
     } catch (error) {
       console.error('Load notification settings error:', error);
@@ -65,27 +74,36 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
 
     try {
       setLoading(true);
+
+      const dbFieldMap: Record<keyof NotificationSettings, string> = {
+        emailEnabled: 'email_enabled',
+        pushEnabled: 'push_enabled',
+        smsEnabled: 'sms_enabled',
+        bookingConfirmations: 'booking_confirmations',
+        statusUpdates: 'status_updates',
+        teamAssignments: 'team_assignments',
+        paymentReceipts: 'payment_receipts',
+      };
+
       const { error } = await supabase
-        .from('users')
-        .update({
-          notification_preferences: newSettings,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+        .from('user_notification_preferences')
+        .upsert({
+          user_id: user.id,
+          email_enabled: newSettings.emailEnabled,
+          push_enabled: newSettings.pushEnabled,
+          sms_enabled: newSettings.smsEnabled,
+          booking_confirmations: newSettings.bookingConfirmations,
+          status_updates: newSettings.statusUpdates,
+          team_assignments: newSettings.teamAssignments,
+          payment_receipts: newSettings.paymentReceipts,
+        }, {
+          onConflict: 'user_id',
+        });
 
       if (error) throw error;
 
-      // Show confirmation for important changes
-      if (key === 'smsUpdates' || key === 'emailNotifications') {
-        Alert.alert(
-          'Settings Updated',
-          `${key === 'smsUpdates' ? 'SMS' : 'Email'} notifications ${value ? 'enabled' : 'disabled'}.`,
-          [{ text: 'OK' }]
-        );
-      }
     } catch (error) {
       console.error('Update settings error:', error);
-      // Revert on error
       setSettings(settings);
       Alert.alert('Error', 'Failed to update notification settings. Please try again.');
     } finally {
@@ -95,44 +113,51 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
 
   const notificationOptions = [
     {
-      key: 'smsUpdates' as keyof NotificationSettings,
-      title: 'SMS Updates',
-      description: 'Get text messages for important move updates and milestones',
-      icon: <MessageSquare size={20} color="#2563eb" />,
-      category: 'primary',
-    },
-    {
-      key: 'emailNotifications' as keyof NotificationSettings,
+      key: 'emailEnabled' as keyof NotificationSettings,
       title: 'Email Notifications',
       description: 'Receive detailed email reports, confirmations, and receipts',
       icon: <Mail size={20} color="#2563eb" />,
       category: 'primary',
     },
     {
-      key: 'pushNotifications' as keyof NotificationSettings,
+      key: 'pushEnabled' as keyof NotificationSettings,
       title: 'Push Notifications',
       description: 'Real-time alerts on your phone for urgent updates',
       icon: <Smartphone size={20} color="#2563eb" />,
       category: 'primary',
     },
     {
-      key: 'milestoneUpdates' as keyof NotificationSettings,
-      title: 'Milestone Updates',
+      key: 'smsEnabled' as keyof NotificationSettings,
+      title: 'SMS Updates',
+      description: 'Get text messages for important move updates and milestones',
+      icon: <MessageSquare size={20} color="#2563eb" />,
+      category: 'primary',
+    },
+    {
+      key: 'bookingConfirmations' as keyof NotificationSettings,
+      title: 'Booking Confirmations',
+      description: 'Receive confirmation when your move is scheduled',
+      icon: <Bell size={20} color="#059669" />,
+      category: 'secondary',
+    },
+    {
+      key: 'statusUpdates' as keyof NotificationSettings,
+      title: 'Status Updates',
       description: 'Notifications for packing, loading, departure, and arrival',
       icon: <Bell size={20} color="#059669" />,
       category: 'secondary',
     },
     {
-      key: 'etaUpdates' as keyof NotificationSettings,
-      title: 'ETA Updates',
-      description: 'Alerts when arrival time changes due to traffic or delays',
+      key: 'teamAssignments' as keyof NotificationSettings,
+      title: 'Team Assignments',
+      description: 'Alerts when your moving team is assigned (for staff)',
       icon: <Bell size={20} color="#059669" />,
       category: 'secondary',
     },
     {
-      key: 'teamMessages' as keyof NotificationSettings,
-      title: 'Team Messages',
-      description: 'Direct messages from your moving team and driver',
+      key: 'paymentReceipts' as keyof NotificationSettings,
+      title: 'Payment Receipts',
+      description: 'Get receipts and payment confirmations via email',
       icon: <Bell size={20} color="#059669" />,
       category: 'secondary',
     },
@@ -202,21 +227,21 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
         <Text style={styles.summaryTitle}>Notification Summary</Text>
         <View style={styles.summaryGrid}>
           <View style={styles.summaryItem}>
-            <MessageSquare size={16} color={settings.smsUpdates ? '#10b981' : '#94a3b8'} />
-            <Text style={[styles.summaryText, { color: settings.smsUpdates ? '#10b981' : '#94a3b8' }]}>
-              SMS {settings.smsUpdates ? 'On' : 'Off'}
+            <Mail size={16} color={settings.emailEnabled ? '#10b981' : '#94a3b8'} />
+            <Text style={[styles.summaryText, { color: settings.emailEnabled ? '#10b981' : '#94a3b8' }]}>
+              Email {settings.emailEnabled ? 'On' : 'Off'}
             </Text>
           </View>
           <View style={styles.summaryItem}>
-            <Mail size={16} color={settings.emailNotifications ? '#10b981' : '#94a3b8'} />
-            <Text style={[styles.summaryText, { color: settings.emailNotifications ? '#10b981' : '#94a3b8' }]}>
-              Email {settings.emailNotifications ? 'On' : 'Off'}
+            <Smartphone size={16} color={settings.pushEnabled ? '#10b981' : '#94a3b8'} />
+            <Text style={[styles.summaryText, { color: settings.pushEnabled ? '#10b981' : '#94a3b8' }]}>
+              Push {settings.pushEnabled ? 'On' : 'Off'}
             </Text>
           </View>
           <View style={styles.summaryItem}>
-            <Smartphone size={16} color={settings.pushNotifications ? '#10b981' : '#94a3b8'} />
-            <Text style={[styles.summaryText, { color: settings.pushNotifications ? '#10b981' : '#94a3b8' }]}>
-              Push {settings.pushNotifications ? 'On' : 'Off'}
+            <MessageSquare size={16} color={settings.smsEnabled ? '#10b981' : '#94a3b8'} />
+            <Text style={[styles.summaryText, { color: settings.smsEnabled ? '#10b981' : '#94a3b8' }]}>
+              SMS {settings.smsEnabled ? 'On' : 'Off'}
             </Text>
           </View>
         </View>
