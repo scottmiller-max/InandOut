@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { emailService } from './email';
 
 export interface EmailTemplate {
   id: string;
@@ -102,8 +103,8 @@ export const emailTemplateService = {
 
   // Send branded email
   sendBrandedEmail: async (
-    templateName: string, 
-    recipientEmail: string, 
+    templateName: string,
+    recipientEmail: string,
     mergeData: EmailMergeData
   ): Promise<boolean> => {
     try {
@@ -115,24 +116,25 @@ export const emailTemplateService = {
 
       const processedEmail = emailTemplateService.processTemplate(template, mergeData);
 
-      // In production, integrate with email service (SendGrid, Mailgun, etc.)
-      console.log('Sending branded email:', {
+      const result = await emailService.sendEmail({
         to: recipientEmail,
         subject: processedEmail.subject,
         html: processedEmail.htmlContent,
         text: processedEmail.textContent,
+        replyTo: 'support@inandoutmovin.com',
       });
 
-      // Store email log for tracking
-      await supabase.from('email_logs').insert({
-        template_name: templateName,
-        recipient_email: recipientEmail,
-        subject: processedEmail.subject,
-        merge_data: mergeData,
-        sent_at: new Date().toISOString(),
-      });
+      if (result.success) {
+        await supabase.from('email_logs').insert({
+          template_name: templateName,
+          recipient_email: recipientEmail,
+          subject: processedEmail.subject,
+          merge_data: mergeData,
+          sent_at: new Date().toISOString(),
+        });
+      }
 
-      return true;
+      return result.success;
     } catch (error) {
       console.error('Send branded email error:', error);
       return false;
