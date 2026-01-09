@@ -1,14 +1,18 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Users, Search, Star, Calendar, DollarSign, Phone, Mail, MapPin, Plus, X, Eye, Filter, Download, ChartBar as BarChart3, TrendingUp, ArrowLeft } from 'lucide-react-native';
+import { Users, Search, Star, Calendar, DollarSign, Phone, Mail, MapPin, Plus, X, Eye, Filter, Download, ChartBar as BarChart3, TrendingUp, ArrowLeft, MessageCircle, Brain, Briefcase, Star as StarIcon } from 'lucide-react-native';
 import { crmService, CRMCustomerData, CustomerReview } from '@/services/crm';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { PerformanceOptimizer, OptimizedListItem } from '@/components/PerformanceOptimizer';
+import { CustomerInteractionHistory } from '@/components/CustomerInteractionHistory';
+import { CustomerAISummary } from '@/components/CustomerAISummary';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+type ModalTab = 'info' | 'interactions' | 'summary';
 
 export default function AdminCRMScreen() {
   const router = useRouter();
@@ -23,6 +27,7 @@ export default function AdminCRMScreen() {
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'value'>('date');
   const [showDashboard, setShowDashboard] = useState(false);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [modalTab, setModalTab] = useState<ModalTab>('summary');
 
   useEffect(() => {
     checkAdminAccess();
@@ -355,109 +360,155 @@ export default function AdminCRMScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <ScrollView style={styles.modalContent}>
-                  {/* Customer Info */}
-                  <View style={styles.customerInfoCard}>
-                    <Text style={styles.cardTitle}>Customer Information</Text>
-                    <View style={styles.infoGrid}>
-                      <View style={styles.infoItem}>
-                        <Mail size={16} color="#64748b" />
-                        <Text style={styles.infoText}>{selectedCustomer.email}</Text>
-                      </View>
-                      <View style={styles.infoItem}>
-                        <Phone size={16} color="#64748b" />
-                        <Text style={styles.infoText}>{selectedCustomer.phone}</Text>
-                      </View>
-                      {selectedCustomer.address && (
+                {/* Tab Navigation */}
+                <View style={styles.modalTabs}>
+                  <TouchableOpacity
+                    style={[styles.modalTab, modalTab === 'summary' && styles.modalTabActive]}
+                    onPress={() => setModalTab('summary')}
+                  >
+                    <Brain size={16} color={modalTab === 'summary' ? '#2563eb' : '#64748b'} />
+                    <Text style={[styles.modalTabText, modalTab === 'summary' && styles.modalTabTextActive]}>
+                      AI Summary
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalTab, modalTab === 'interactions' && styles.modalTabActive]}
+                    onPress={() => setModalTab('interactions')}
+                  >
+                    <MessageCircle size={16} color={modalTab === 'interactions' ? '#2563eb' : '#64748b'} />
+                    <Text style={[styles.modalTabText, modalTab === 'interactions' && styles.modalTabTextActive]}>
+                      Interactions
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalTab, modalTab === 'info' && styles.modalTabActive]}
+                    onPress={() => setModalTab('info')}
+                  >
+                    <Briefcase size={16} color={modalTab === 'info' ? '#2563eb' : '#64748b'} />
+                    <Text style={[styles.modalTabText, modalTab === 'info' && styles.modalTabTextActive]}>
+                      Details
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Tab Content */}
+                {modalTab === 'summary' && (
+                  <View style={styles.tabContent}>
+                    <CustomerAISummary customerId={selectedCustomer.id} />
+                  </View>
+                )}
+
+                {modalTab === 'interactions' && (
+                  <View style={styles.tabContent}>
+                    <CustomerInteractionHistory customerId={selectedCustomer.id} />
+                  </View>
+                )}
+
+                {modalTab === 'info' && (
+                  <ScrollView style={styles.modalContent}>
+                    {/* Customer Info */}
+                    <View style={styles.customerInfoCard}>
+                      <Text style={styles.cardTitle}>Customer Information</Text>
+                      <View style={styles.infoGrid}>
                         <View style={styles.infoItem}>
-                          <MapPin size={16} color="#64748b" />
-                          <Text style={styles.infoText}>
-                            {selectedCustomer.address}, {selectedCustomer.city}, {selectedCustomer.state} {selectedCustomer.zipCode}
-                          </Text>
+                          <Mail size={16} color="#64748b" />
+                          <Text style={styles.infoText}>{selectedCustomer.email}</Text>
                         </View>
-                      )}
+                        <View style={styles.infoItem}>
+                          <Phone size={16} color="#64748b" />
+                          <Text style={styles.infoText}>{selectedCustomer.phone}</Text>
+                        </View>
+                        {selectedCustomer.address && (
+                          <View style={styles.infoItem}>
+                            <MapPin size={16} color="#64748b" />
+                            <Text style={styles.infoText}>
+                              {selectedCustomer.address}, {selectedCustomer.city}, {selectedCustomer.state} {selectedCustomer.zipCode}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
-                  </View>
 
-                  {/* Jobs */}
-                  <View style={styles.jobsCard}>
-                    <Text style={styles.cardTitle}>Jobs ({selectedCustomer.jobs.length})</Text>
-                    {selectedCustomer.jobs.map((job) => (
-                      <View key={job.id} style={styles.jobItem}>
-                        <View style={styles.jobHeader}>
-                          <Text style={styles.jobNumber}>{job.jobNumber}</Text>
-                          <View style={[styles.statusBadge, 
-                            job.status === 'completed' ? styles.completedBadge :
-                            job.status === 'in_progress' ? styles.inProgressBadge :
-                            job.status === 'cancelled' ? styles.cancelledBadge :
-                            styles.scheduledBadge
-                          ]}>
-                            <Text style={styles.statusText}>{job.status}</Text>
+                    {/* Jobs */}
+                    <View style={styles.jobsCard}>
+                      <Text style={styles.cardTitle}>Jobs ({selectedCustomer.jobs.length})</Text>
+                      {selectedCustomer.jobs.map((job) => (
+                        <View key={job.id} style={styles.jobItem}>
+                          <View style={styles.jobHeader}>
+                            <Text style={styles.jobNumber}>{job.jobNumber}</Text>
+                            <View style={[styles.statusBadge,
+                              job.status === 'completed' ? styles.completedBadge :
+                              job.status === 'in_progress' ? styles.inProgressBadge :
+                              job.status === 'cancelled' ? styles.cancelledBadge :
+                              styles.scheduledBadge
+                            ]}>
+                              <Text style={styles.statusText}>{job.status}</Text>
+                            </View>
                           </View>
+                          <Text style={styles.jobDate}>{formatDate(job.jobDate)} - {job.timeSlot}</Text>
+                          <Text style={styles.jobService}>{job.serviceType.replace('_', ' & ')}</Text>
+                          {job.actualCost && (
+                            <Text style={styles.jobCost}>{formatCurrency(job.actualCost)}</Text>
+                          )}
+                          {job.customerNotes && (
+                            <Text style={styles.jobNotes} numberOfLines={2}>
+                              Notes: {job.customerNotes}
+                            </Text>
+                          )}
                         </View>
-                        <Text style={styles.jobDate}>{formatDate(job.jobDate)} - {job.timeSlot}</Text>
-                        <Text style={styles.jobService}>{job.serviceType.replace('_', ' & ')}</Text>
-                        {job.actualCost && (
-                          <Text style={styles.jobCost}>{formatCurrency(job.actualCost)}</Text>
-                        )}
-                        {job.customerNotes && (
-                          <Text style={styles.jobNotes} numberOfLines={2}>
-                            Notes: {job.customerNotes}
-                          </Text>
-                        )}
-                      </View>
-                    ))}
-                  </View>
+                      ))}
+                    </View>
 
-                  {/* Reviews */}
-                  <View style={styles.reviewsCard}>
-                    <Text style={styles.cardTitle}>Reviews ({selectedCustomer.reviews.length})</Text>
-                    {selectedCustomer.reviews.map((review) => (
-                      <View key={review.id} style={styles.reviewItem}>
-                        <View style={styles.reviewHeader}>
-                          <Text style={styles.reviewDate}>{formatDate(review.reviewDate)}</Text>
-                          <View style={styles.reviewRating}>
-                            {renderStars(review.overallRating)}
-                          </View>
-                        </View>
-                        
-                        <View style={styles.ratingBreakdown}>
-                          <View style={styles.ratingRow}>
-                            <Text style={styles.ratingLabel}>Communication</Text>
-                            <View style={styles.ratingStars}>
-                              {renderStars(review.communicationRating)}
+                    {/* Reviews */}
+                    <View style={styles.reviewsCard}>
+                      <Text style={styles.cardTitle}>Reviews ({selectedCustomer.reviews.length})</Text>
+                      {selectedCustomer.reviews.map((review) => (
+                        <View key={review.id} style={styles.reviewItem}>
+                          <View style={styles.reviewHeader}>
+                            <Text style={styles.reviewDate}>{formatDate(review.reviewDate)}</Text>
+                            <View style={styles.reviewRating}>
+                              {renderStars(review.overallRating)}
                             </View>
                           </View>
-                          <View style={styles.ratingRow}>
-                            <Text style={styles.ratingLabel}>Professionalism</Text>
-                            <View style={styles.ratingStars}>
-                              {renderStars(review.professionalismRating)}
-                            </View>
-                          </View>
-                          <View style={styles.ratingRow}>
-                            <Text style={styles.ratingLabel}>Service</Text>
-                            <View style={styles.ratingStars}>
-                              {renderStars(review.serviceRating)}
-                            </View>
-                          </View>
-                          <View style={styles.ratingRow}>
-                            <Text style={styles.ratingLabel}>Satisfaction</Text>
-                            <View style={styles.ratingStars}>
-                              {renderStars(review.satisfactionRating)}
-                            </View>
-                          </View>
-                        </View>
 
-                        {review.customerComments && (
-                          <View style={styles.reviewComments}>
-                            <Text style={styles.commentsTitle}>Customer Comments</Text>
-                            <Text style={styles.commentsText}>{review.customerComments}</Text>
+                          <View style={styles.ratingBreakdown}>
+                            <View style={styles.ratingRow}>
+                              <Text style={styles.ratingLabel}>Communication</Text>
+                              <View style={styles.ratingStars}>
+                                {renderStars(review.communicationRating)}
+                              </View>
+                            </View>
+                            <View style={styles.ratingRow}>
+                              <Text style={styles.ratingLabel}>Professionalism</Text>
+                              <View style={styles.ratingStars}>
+                                {renderStars(review.professionalismRating)}
+                              </View>
+                            </View>
+                            <View style={styles.ratingRow}>
+                              <Text style={styles.ratingLabel}>Service</Text>
+                              <View style={styles.ratingStars}>
+                                {renderStars(review.serviceRating)}
+                              </View>
+                            </View>
+                            <View style={styles.ratingRow}>
+                              <Text style={styles.ratingLabel}>Satisfaction</Text>
+                              <View style={styles.ratingStars}>
+                                {renderStars(review.satisfactionRating)}
+                              </View>
+                            </View>
                           </View>
-                        )}
-                      </View>
-                    ))}
-                  </View>
-                </ScrollView>
+
+                          {review.customerComments && (
+                            <View style={styles.reviewComments}>
+                              <Text style={styles.commentsTitle}>Customer Comments</Text>
+                              <Text style={styles.commentsText}>{review.customerComments}</Text>
+                            </View>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
+                )}
               </>
             )}
           </SafeAreaView>
@@ -819,6 +870,42 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     backgroundColor: '#ffffff',
+  },
+  modalTabs: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    gap: 4,
+  },
+  modalTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#f8fafc',
+  },
+  modalTabActive: {
+    backgroundColor: '#eff6ff',
+  },
+  modalTabText: {
+    fontSize: 13,
+    color: '#64748b',
+    fontFamily: 'Inter-Medium',
+  },
+  modalTabTextActive: {
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  tabContent: {
+    flex: 1,
+    padding: 16,
   },
   modalTitle: {
     fontSize: 20,

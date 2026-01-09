@@ -1,10 +1,11 @@
 /**
- * Riley AI Assistant - Vapi Integration
+ * Riley AI Assistant - Edge Function Integration
+ * All Riley interactions are now routed through Supabase Edge Functions
+ * for secure API key handling and interaction logging
  */
 
-const VAPI_API_KEY = process.env.EXPO_PUBLIC_VAPI_API_KEY || '';
-const VAPI_ASSISTANT_ID = process.env.EXPO_PUBLIC_VAPI_ASSISTANT_ID || '';
-const VAPI_API_URL = 'https://api.vapi.ai/chat';
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 export interface RileyMessage {
   role: 'user' | 'assistant' | 'system';
@@ -14,14 +15,18 @@ export interface RileyMessage {
 
 export interface RileyContext {
   userId?: string;
+  customerId?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerName?: string;
   jobId?: string;
   jobNumber?: string;
-  customerName?: string;
   jobStatus?: string;
   moveDate?: string;
   fromAddress?: string;
   toAddress?: string;
   conversationHistory?: RileyMessage[];
+  channel?: 'chat' | 'sms' | 'call';
 }
 
 export interface RileyResponse {
@@ -29,113 +34,132 @@ export interface RileyResponse {
   success: boolean;
   error?: string;
   conversationId?: string;
+  customerId?: string;
+}
+
+export interface RileySummaryResponse {
+  success: boolean;
+  summaryId?: string;
+  summary?: string;
+  interactionCount?: number;
+  error?: string;
 }
 
 export async function sendToRiley(message: string, context: RileyContext): Promise<RileyResponse> {
-  if (!VAPI_API_KEY) {
-    return {
-      message: "I am sorry, but I am not configured properly right now. Please contact support for assistance.",
-      success: false,
-      error: 'VAPI API key not configured',
-    };
-  }
-
-  if (!VAPI_ASSISTANT_ID) {
-    return {
-      message: "I am sorry, but I am not configured properly right now. Please contact support for assistance.",
-      success: false,
-      error: 'VAPI Assistant ID not configured',
-    };
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return getRileyFallbackResponse(message);
   }
 
   try {
-    const contextPrompt = buildContextPrompt(context);
+    const sanitizedMessage = sanitizeUserInput(message);
 
-    const response = await fetch(VAPI_API_URL, {
+    const requestBody = {
+      message: sanitizedMessage,
+      channel: context.channel || 'chat',
+      customer_id: context.customerId,
+      customer_email: context.customerEmail,
+      customer_phone: context.customerPhone,
+      customer_name: context.customerName,
+      job_id: context.jobId,
+      context: {
+        jobNumber: context.jobNumber,
+        jobStatus: context.jobStatus,
+        moveDate: context.moveDate,
+        fromAddress: context.fromAddress,
+        toAddress: context.toAddress,
+      },
+    };
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/riley-chat`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${VAPI_API_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        assistantId: VAPI_ASSISTANT_ID,
-        message,
-        context: contextPrompt,
-        conversationHistory: context.conversationHistory || [],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
-      throw new Error(`Vapi API returned ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Riley edge function error:', response.status, errorText);
+      return getRileyFallbackResponse(message);
     }
 
     const data = await response.json();
 
     return {
-      message: data.message || data.response || "I am not sure how to help with that. Could you rephrase your question?",
-      success: true,
-      conversationId: data.conversationId || data.id,
+      message: data.message || "I am not sure how to help with that. Could you rephrase your question?",
+      success: data.success ?? true,
+      customerId: data.customer_id,
     };
   } catch (error) {
     console.error('Riley AI error:', error);
+    return getRileyFallbackResponse(message);
+  }
+}
+
+export async function triggerRileySummary(
+  customerId: string,
+  triggerEvent: 'end_of_conversation' | 'after_call' | 'after_booking' | 'interaction_threshold' | 'manual_refresh',
+  jobId?: string
+): Promise<RileySummaryResponse> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return {
-      message: "I am experiencing technical difficulties right now. Please try again in a moment or contact support.",
+      success: false,
+      error: 'Supabase not configured',
+    };
+  }
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/riley-summary`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customer_id: customerId,
+        trigger_event: triggerEvent,
+        job_id: jobId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Riley summary error:', response.status, errorText);
+      return {
+        success: false,
+        error: `Summary generation failed: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      success: data.success ?? true,
+      summaryId: data.summary_id,
+      summary: data.summary,
+      interactionCount: data.interaction_count,
+    };
+  } catch (error) {
+    console.error('Riley summary error:', error);
+    return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
 
-function buildContextPrompt(context: RileyContext): string {
-  const parts = [
-    'You are Riley, a helpful AI assistant for IN&OUT Moving company.',
-    'You help customers with job status, scheduling, and general moving questions.',
-    'Always be friendly, professional, and concise.',
-    'If you do not know something, be honest and suggest contacting support.',
-    '',
-  ];
-
-  if (context.customerName) {
-    parts.push(`Customer name: ${context.customerName}`);
-  }
-
-  if (context.jobNumber) {
-    parts.push(`Job number: ${context.jobNumber}`);
-  }
-
-  if (context.jobStatus) {
-    parts.push(`Current job status: ${context.jobStatus}`);
-  }
-
-  if (context.moveDate) {
-    parts.push(`Scheduled move date: ${context.moveDate}`);
-  }
-
-  if (context.fromAddress && context.toAddress) {
-    parts.push(`Move route: ${context.fromAddress} to ${context.toAddress}`);
-  }
-
-  parts.push('');
-  parts.push('IMPORTANT BOUNDARIES:');
-  parts.push('- Only discuss the current job and general moving information');
-  parts.push('- Do not access or discuss other customers data');
-  parts.push('- Do not make promises about pricing or dates without confirmation');
-  parts.push('- Do not modify job details; only provide information');
-  parts.push('- Clearly label yourself as an AI assistant');
-
-  return parts.join('\n');
-}
-
 export async function isRileyAvailable(): Promise<boolean> {
-  if (!VAPI_API_KEY || !VAPI_ASSISTANT_ID) {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return false;
   }
 
   try {
-    const response = await fetch(`https://api.vapi.ai/assistant/${VAPI_ASSISTANT_ID}`, {
-      method: 'GET',
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/riley-chat`, {
+      method: 'OPTIONS',
       headers: {
-        Authorization: `Bearer ${VAPI_API_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       },
     });
 
@@ -151,7 +175,7 @@ export function getRileyFallbackResponse(message: string): RileyResponse {
 
   if (lowerMessage.includes('status') || lowerMessage.includes('where') || lowerMessage.includes('when')) {
     return {
-      message: "I would love to help you check your job status, but I am currently offline. Please check the Track tab in the app for real-time updates, or contact our support team directly.",
+      message: "I would love to help you check your job status! You can view real-time updates in the Track tab of our app, or contact our support team for detailed information.",
       success: false,
       error: 'Riley is offline',
     };
@@ -159,7 +183,7 @@ export function getRileyFallbackResponse(message: string): RileyResponse {
 
   if (lowerMessage.includes('schedule') || lowerMessage.includes('book') || lowerMessage.includes('appointment')) {
     return {
-      message: "I would be happy to help you with scheduling, but I am currently offline. Please use the Quote tab to request a quote or schedule a consultation, or contact our support team.",
+      message: "I would be happy to help you with scheduling! You can request a quote through our app's Quote tab, or call our team directly to schedule your move.",
       success: false,
       error: 'Riley is offline',
     };
@@ -167,14 +191,21 @@ export function getRileyFallbackResponse(message: string): RileyResponse {
 
   if (lowerMessage.includes('quote') || lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
     return {
-      message: "I would love to help you get a quote, but I am currently offline. Please use the Quote tab to get an instant estimate, or contact our support team for a detailed quote.",
+      message: "Great question about pricing! You can get an instant estimate through our Quote tab. For a detailed quote, our team would be happy to schedule a consultation.",
       success: false,
       error: 'Riley is offline',
     };
   }
 
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+    return {
+      message: "Hello! I am Riley, your IN&OUT Moving assistant. How can I help you today? I can assist with quotes, scheduling, or answer questions about your move.",
+      success: true,
+    };
+  }
+
   return {
-    message: "I am currently offline, but I would love to help! Please try again later or contact our support team directly for immediate assistance.",
+    message: "Thank you for reaching out! I am Riley, your IN&OUT Moving assistant. How can I help you today? Feel free to ask about quotes, scheduling, or your move status.",
     success: false,
     error: 'Riley is offline',
   };
@@ -196,15 +227,11 @@ export async function logRileyConversation(
   response: string,
   context: RileyContext
 ): Promise<void> {
-  try {
-    console.log('Riley conversation logged:', {
-      userId,
-      jobId: context.jobId,
-      timestamp: new Date().toISOString(),
-      messageLength: message.length,
-      responseLength: response.length,
-    });
-  } catch (error) {
-    console.error('Failed to log Riley conversation:', error);
-  }
+  // Logging now happens server-side in the edge function
+  // This function is kept for backwards compatibility but is a no-op
+  console.log('Riley conversation (logged server-side):', {
+    userId,
+    jobId: context.jobId,
+    timestamp: new Date().toISOString(),
+  });
 }
