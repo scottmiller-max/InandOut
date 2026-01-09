@@ -14,200 +14,172 @@ interface ContactSubmission {
   subject?: string;
   message: string;
   source?: string;
-  honeypot?: string; // Spam prevention field
+  consent?: boolean;
+  honeypot?: string;
 }
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
   try {
-    // Only allow POST requests
-    if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        {
-          status: 405,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Parse request body
     const body: ContactSubmission = await req.json();
 
-    // Basic spam prevention - honeypot field should be empty
+    // Honeypot spam trap
     if (body.honeypot) {
       return new Response(
-        JSON.stringify({ success: true, message: "Thank you for your submission" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Validate required fields
+    // Required fields
     if (!body.name || !body.email || !body.message) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: name, email, and message are required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.email)) {
+    // Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
       return new Response(
         JSON.stringify({ error: "Invalid email address" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Validate message length
-    if (body.message.length < 10) {
+    // Message length
+    if (body.message.trim().length < 10) {
       return new Response(
-        JSON.stringify({ error: "Message must be at least 10 characters long" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Message too short" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get request metadata
+    // Metadata
     const userAgent = req.headers.get("user-agent") || "Unknown";
     const forwardedFor = req.headers.get("x-forwarded-for");
     const ipAddress = forwardedFor ? forwardedFor.split(",")[0] : "Unknown";
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Supabase client (service role)
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // Insert contact submission into database
-    const { data, error } = await supabase
+    /* -------------------------------------------------------
+       1. UPSERT CUSTOMER
+    ------------------------------------------------------- */
+    const { data: customer, error: customerError } = await supabase
+      .from("customers")
+      .upsert(
+        {
+          full_name: body.name,
+          email: body.email,
+          phone: body.phone || null,
+          source: body.source || "website",
+          email_consent: true,
+          sms_consent: !!body.consent,
+          last_interaction_at: new Date().toISOString(),
+        },
+        { onConflict: "email" }
+      )
+      .select()
+      .single();
+
+    if (customerError) {
+      console.error("Customer upsert failed:", customerError);
+      throw new Error("Customer creation failed");
+    }
+
+    /* -------------------------------------------------------
+       2. CONTACT SUBMISSION (AUDIT LOG)
+    ------------------------------------------------------- */
+    const { data: submission, error: submissionError } = await supabase
       .from("contact_submissions")
       .insert({
+        customer_id: customer.id,
         name: body.name,
         email: body.email,
         phone: body.phone || null,
         subject: body.subject || null,
         message: body.message,
-        source: body.source || "landing_page",
+        source: body.source || "website",
+        consent: !!body.consent,
+        consent_timestamp: body.consent ? new Date().toISOString() : null,
         user_agent: userAgent,
         ip_address: ipAddress,
-        status: "pending",
+        status: "new",
       })
       .select()
       .single();
 
-    if (error) {
-      console.error("Database error:", error);
-      return new Response(
-        JSON.stringify({ error: "Failed to save submission" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    if (submissionError) {
+      console.error("Submission insert failed:", submissionError);
+      throw new Error("Submission failed");
     }
 
-    // Send Slack notification to admins
+    /* -------------------------------------------------------
+       3. INTERACTION RECORD
+    ------------------------------------------------------- */
+    await supabase.from("interactions").insert({
+      customer_id: customer.id,
+      contact_submission_id: submission.id,
+      interaction_type: "note",
+      channel: "web_form",
+      direction: "inbound",
+      content: body.message,
+      notes: `Contact form submission: ${body.subject || 'No subject'}`,
+      handled_by: "human",
+    });
+
+    /* -------------------------------------------------------
+       4. SLACK NOTIFICATION (OPTIONAL)
+    ------------------------------------------------------- */
     const slackWebhookUrl = Deno.env.get("EXPO_PUBLIC_SLACK_WEBHOOK_URL");
     if (slackWebhookUrl) {
-      try {
-        const slackMessage = {
-          text: "🆕 New Contact Form Submission",
+      await fetch(slackWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: "New Contact Submission",
           attachments: [
             {
-              color: "#3b82f6",
               fields: [
-                {
-                  title: "Name",
-                  value: body.name,
-                  short: true,
-                },
-                {
-                  title: "Email",
-                  value: body.email,
-                  short: true,
-                },
-                {
-                  title: "Phone",
-                  value: body.phone || "Not provided",
-                  short: true,
-                },
-                {
-                  title: "Subject",
-                  value: body.subject || "No subject",
-                  short: true,
-                },
-                {
-                  title: "Message",
-                  value: body.message.length > 200 
-                    ? body.message.substring(0, 200) + "..." 
-                    : body.message,
-                  short: false,
-                },
-                {
-                  title: "Source",
-                  value: body.source || "landing_page",
-                  short: true,
-                },
-                {
-                  title: "Submitted At",
-                  value: new Date().toLocaleString(),
-                  short: true,
-                },
+                { title: "Name", value: body.name, short: true },
+                { title: "Email", value: body.email, short: true },
+                { title: "Phone", value: body.phone || "--", short: true },
+                { title: "Source", value: body.source || "website", short: true },
               ],
             },
           ],
-        };
-
-        await fetch(slackWebhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(slackMessage),
-        });
-      } catch (slackError) {
-        console.error("Failed to send Slack notification:", slackError);
-        // Don't fail the request if Slack notification fails
-      }
+        }),
+      });
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Thank you for your message! We'll get back to you soon.",
-        submissionId: data.id,
+        customerId: customer.id,
+        submissionId: submission.id,
       }),
-      {
-        status: 201,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
-    console.error("Error processing contact submission:", error);
+
+  } catch (err) {
+    console.error("contact-submit error:", err);
     return new Response(
-      JSON.stringify({
-        error: "An error occurred while processing your submission",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
