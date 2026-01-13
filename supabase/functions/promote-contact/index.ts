@@ -24,6 +24,63 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Initialize Supabase client with service role
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get user's role
+    const { data: userRole, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (roleError || !userRole) {
+      return new Response(
+        JSON.stringify({ error: "User role not found" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Authorization check: Only admin, master_admin, or dispatcher can promote contacts
+    const allowedRoles = ['master_admin', 'admin', 'dispatcher'];
+    if (!allowedRoles.includes(userRole.role)) {
+      await supabase.from("audit_log").insert({
+        user_id: user.id,
+        user_role: userRole.role,
+        action_type: 'promote_contact_attempt',
+        action_category: 'crm',
+        success: false,
+        error_message: 'Insufficient permissions'
+      });
+
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions. Required roles: admin, dispatcher" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const body: PromoteContactRequest = await req.json();
 
     // Validate required fields
@@ -33,12 +90,6 @@ Deno.serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Initialize Supabase client with service role
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
 
     // Fetch the contact submission
     const { data: submission, error: submissionError } = await supabase
@@ -138,8 +189,25 @@ Deno.serve(async (req: Request) => {
           content: "Contact submission promoted to customer",
           notes: `Promoted from submission: ${submission.subject || 'No subject'}`,
           handled_by: "human",
+          created_by: user.id
         });
     }
+
+    // Log successful promotion to audit log
+    await supabase.from("audit_log").insert({
+      user_id: user.id,
+      user_role: userRole.role,
+      action_type: 'promote_contact',
+      action_category: 'crm',
+      affected_entity_type: 'customer',
+      affected_entity_id: customer.id,
+      action_details: {
+        contact_submission_id: body.contact_submission_id,
+        customer_email: customer.email,
+        already_promoted: !!submission.customer_id
+      },
+      success: true
+    });
 
     return new Response(
       JSON.stringify({

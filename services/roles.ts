@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-export type UserRole = 'master_admin' | 'admin' | 'family_partner' | 'customer';
+export type UserRole = 'master_admin' | 'admin' | 'dispatcher' | 'family_partner' | 'crew' | 'customer';
 
 export interface UserRoleData {
   id: string;
@@ -141,9 +141,11 @@ class RoleService {
 
   getRoleHierarchyLevel(role: UserRole): number {
     const hierarchy: Record<UserRole, number> = {
-      master_admin: 4,
-      admin: 3,
+      master_admin: 5,
+      admin: 4,
+      dispatcher: 3,
       family_partner: 2,
+      crew: 2,
       customer: 1,
     };
     return hierarchy[role] || 0;

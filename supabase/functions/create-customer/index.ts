@@ -33,6 +33,63 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Initialize Supabase client with service role
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get user's role
+    const { data: userRole, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (roleError || !userRole) {
+      return new Response(
+        JSON.stringify({ error: "User role not found" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Authorization check: Only admin, master_admin, or dispatcher can create customers
+    const allowedRoles = ['master_admin', 'admin', 'dispatcher'];
+    if (!allowedRoles.includes(userRole.role)) {
+      await supabase.from("audit_log").insert({
+        user_id: user.id,
+        user_role: userRole.role,
+        action_type: 'create_customer_attempt',
+        action_category: 'crm',
+        success: false,
+        error_message: 'Insufficient permissions'
+      });
+
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions. Required roles: admin, dispatcher" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const body: CreateCustomerRequest = await req.json();
 
     // Validate required fields
@@ -50,12 +107,6 @@ Deno.serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Initialize Supabase client with service role
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
 
     // Upsert customer (by email)
     const { data: customer, error: customerError } = await supabase
@@ -81,11 +132,34 @@ Deno.serve(async (req: Request) => {
 
     if (customerError) {
       console.error("Customer upsert failed:", customerError);
+
+      await supabase.from("audit_log").insert({
+        user_id: user.id,
+        user_role: userRole.role,
+        action_type: 'create_customer',
+        action_category: 'crm',
+        action_details: { email: body.email },
+        success: false,
+        error_message: customerError.message
+      });
+
       return new Response(
         JSON.stringify({ error: "Failed to create customer", details: customerError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Log successful action
+    await supabase.from("audit_log").insert({
+      user_id: user.id,
+      user_role: userRole.role,
+      action_type: 'create_customer',
+      action_category: 'crm',
+      affected_entity_type: 'customer',
+      affected_entity_id: customer.id,
+      action_details: { customer_email: customer.email, customer_name: customer.full_name },
+      success: true
+    });
 
     return new Response(
       JSON.stringify({
