@@ -1,0 +1,14 @@
+
+> inout-moving-app@1.0.0 build:web
+> expo export --platform web
+
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_VAPI_API_KEY EXPO_PUBLIC_VAPI_ASSISTANT_ID EXPO_PUBLIC_VAPI_PHONE_NUMBER EXPO_PUBLIC_SLACK_WEBHOOK_URL EXPO_PUBLIC_SLACK_BOT_TOKEN EXPO_PUBLIC_SENTRY_DSN SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_FROM_EMAIL SMTP_FROM_NAME
+Starting Metro Bundler
+Static rendering is enabled. Learn more: https://docs.expo.dev/router/reference/static-rendering/
+Error: Could not find MIME for Buffer <null>
+Error: Could not find MIME for Buffer <null>
+    at Jimp.parseBitmap (/tmp/cc-agent/62169898/project/node_modules/jimp-compact/dist/jimp.js:1:125518)
+    at Jimp.parseBitmap (/tmp/cc-agent/62169898/project/node_modules/jimp-compact/dist/jimp.js:1:8514)
+    at /tmp/cc-agent/62169898/project/node_modules/jimp-compact/dist/jimp.js:1:7613
+    at FSReqCallback.readFileAfterClose [as oncomplete] (node:internal/fs/read/context:68:3)
