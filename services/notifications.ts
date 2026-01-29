@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { emailService } from './email';
 import { supabase } from './supabase';
+import { sendBookingConfirmationEmail } from './bookingEmail';
 
 // Configure notification behavior
 if (Platform.OS !== 'web') {
@@ -81,7 +82,7 @@ export const notificationService = {
     );
   },
 
-  notifyJobBooked: async (jobId: string) => {
+  notifyJobBooked: async (jobId: string, jobStatus?: string) => {
     try {
       const { data: job } = await supabase
         .from('jobs')
@@ -91,6 +92,16 @@ export const notificationService = {
 
       if (!job || !job.customers) return;
 
+      // Only send booking confirmation email when status is 'confirmed' or 'scheduled'
+      const status = jobStatus || job.status;
+      if (status === 'confirmed' || status === 'scheduled') {
+        const emailResult = await sendBookingConfirmationEmail(jobId);
+
+        if (!emailResult.success) {
+          console.error('Failed to send booking confirmation email:', emailResult.error);
+        }
+      }
+
       const customer = job.customers;
       const moveDate = new Date(job.move_date).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -99,24 +110,27 @@ export const notificationService = {
         day: 'numeric',
       });
 
-      await emailService.sendBookingConfirmation({
-        customerEmail: customer.email,
-        customerName: `${customer.first_name} ${customer.last_name}`,
-        jobNumber: job.job_number,
-        moveDate,
-        fromAddress: job.from_address,
-        toAddress: job.to_address,
-        estimatedCost: `$${job.estimated_total}`,
-        userId: customer.user_id,
-        jobId: jobId,
-      });
-
+      // Send push notification
       await notificationService.scheduleNotification(
         'Booking Confirmed!',
         `Your move on ${moveDate} has been confirmed. Job #${job.job_number}`
       );
     } catch (error) {
       console.error('Error sending job booked notification:', error);
+    }
+  },
+
+  // Manual resend for admin use - skips throttle check
+  resendBookingConfirmation: async (jobId: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const result = await sendBookingConfirmationEmail(jobId, { skipThrottle: true });
+      return result;
+    } catch (error) {
+      console.error('Error resending booking confirmation:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
     }
   },
 

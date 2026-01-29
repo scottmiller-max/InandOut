@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { notificationService } from './notifications';
 
 export interface Customer {
   id: string;
@@ -91,7 +92,7 @@ export const crmService = {
   },
 
   // Create job from quote data
-  createJob: async (jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>) => {
+  createJob: async (jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>, sendConfirmation = true) => {
     try {
       const { data, error } = await supabase
         .from('jobs')
@@ -114,9 +115,56 @@ export const crmService = {
         .single();
 
       if (error) throw error;
+
+      // Send booking confirmation email if status is 'confirmed' or 'scheduled'
+      if (sendConfirmation && data && (jobData.status === 'confirmed' || jobData.status === 'scheduled')) {
+        try {
+          await notificationService.notifyJobBooked(data.id, jobData.status);
+        } catch (emailError) {
+          console.error('Failed to send booking confirmation email:', emailError);
+          // Don't throw - job creation should succeed even if email fails
+        }
+      }
+
       return data;
     } catch (error) {
       console.error('Create job error:', error);
+      throw error;
+    }
+  },
+
+  // Update job status and trigger notifications
+  updateJobStatus: async (
+    jobId: string,
+    newStatus: 'lead' | 'quoted' | 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled',
+    options: { sendConfirmation?: boolean } = { sendConfirmation: true }
+  ) => {
+    try {
+      const { data: job, error } = await supabase
+        .from('jobs')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Send booking confirmation email if status changed to 'confirmed' or 'scheduled'
+      if (options.sendConfirmation && (newStatus === 'confirmed' || newStatus === 'scheduled')) {
+        try {
+          await notificationService.notifyJobBooked(jobId, newStatus);
+        } catch (emailError) {
+          console.error('Failed to send booking confirmation email:', emailError);
+          // Don't throw - status update should succeed even if email fails
+        }
+      }
+
+      return job;
+    } catch (error) {
+      console.error('Update job status error:', error);
       throw error;
     }
   },
