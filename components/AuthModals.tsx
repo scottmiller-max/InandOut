@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Eye, EyeOff, Mail, Lock, User, Phone, CircleAlert as AlertCircle } from 'lucide-react-native';
+import { X, Eye, EyeOff, Mail, Lock, User, Phone, CircleAlert as AlertCircle, CheckCircle } from 'lucide-react-native';
 import { authService } from '@/services/auth';
 import { scrollUtils } from '@/utils/scrollUtils';
 
@@ -35,6 +35,8 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showThankYou, setShowThankYou] = useState(false);
   const [showEmailBanner, setShowEmailBanner] = useState(false);
+  const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
+  const [resetPasswordError, setResetPasswordError] = useState('');
 
   // Reset form when modal closes or mode changes
   React.useEffect(() => {
@@ -55,6 +57,8 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     setShowConfirmPassword(false);
     setShowThankYou(false);
     setShowEmailBanner(false);
+    setResetPasswordSuccess(false);
+    setResetPasswordError('');
   };
 
   // Validation functions
@@ -153,26 +157,31 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   };
 
   const handleForgotPassword = async () => {
+    setResetPasswordSuccess(false);
+    setResetPasswordError('');
+
     if (!email) {
-      Alert.alert('Email Required', 'Please enter your email address first.');
+      setResetPasswordError('Please enter your email address first.');
       return;
     }
 
     if (!validateEmail(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      setResetPasswordError('Please enter a valid email address.');
       return;
     }
 
+    setLoading(true);
     try {
       await authService.resetPassword(email);
-      Alert.alert(
-        'Reset Link Sent',
-        'Check your email for a password reset link.',
-        [{ text: 'OK' }]
-      );
+      setResetPasswordSuccess(true);
+      setTimeout(() => {
+        setResetPasswordSuccess(false);
+      }, 8000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
-      Alert.alert('Error', errorMessage);
+      setResetPasswordError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -234,6 +243,24 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               <View style={styles.errorContainer}>
                 <AlertCircle size={16} color="#dc2626" />
                 <Text style={styles.errorText}>{errors.general}</Text>
+              </View>
+            )}
+
+            {/* Password Reset Success */}
+            {resetPasswordSuccess && (
+              <View style={styles.successContainer}>
+                <CheckCircle size={16} color="#059669" />
+                <Text style={styles.successText}>
+                  Password reset link sent! Check your email for instructions.
+                </Text>
+              </View>
+            )}
+
+            {/* Password Reset Error */}
+            {resetPasswordError && (
+              <View style={styles.errorContainer}>
+                <AlertCircle size={16} color="#dc2626" />
+                <Text style={styles.errorText}>{resetPasswordError}</Text>
               </View>
             )}
 
@@ -516,6 +543,23 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: '#dc2626',
+    fontFamily: 'Inter-Medium',
+    marginLeft: 8,
+    flex: 1,
+  },
+  successContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
+    borderColor: '#86efac',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  successText: {
+    fontSize: 14,
+    color: '#059669',
     fontFamily: 'Inter-Medium',
     marginLeft: 8,
     flex: 1,
