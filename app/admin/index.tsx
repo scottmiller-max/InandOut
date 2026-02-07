@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { Users, Settings, ChartBar as BarChart3, ArrowRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
@@ -37,7 +37,7 @@ export default function AdminIndexScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer>
       {/* Header */}
       <View style={styles.header}>
         <DateTimeDisplay />
@@ -89,7 +89,7 @@ export default function AdminIndexScreen() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 

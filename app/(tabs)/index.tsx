@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Text, View, StyleSheet, Animated, Dimensions, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { useRouter } from 'expo-router';
 import { Calculator, Video, Bot, Calendar, ArrowRight, Star, Truck, MapPin, Clock, Phone } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
@@ -74,17 +75,17 @@ export default function HomeScreen() {
 
   if (authLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <PageContainer scroll={false}>
         <View style={styles.loadingContainer}>
           <Truck size={48} color="#2563eb" />
           <Text style={styles.loadingText}>Loading IN&OUT Moving...</Text>
         </View>
-      </SafeAreaView>
+      </PageContainer>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer>
       {/* Header */}
       <View style={styles.header}>
         <DateTimeDisplay />
@@ -96,8 +97,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>
@@ -265,11 +264,9 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-
       {/* Riley AI Assistant Widget */}
       <View style={styles.rileyContainer}>
-        <RileyWidget 
+        <RileyWidget
           size="large"
           contextData={{
             moveId: activeMove?.id,
@@ -285,14 +282,13 @@ export default function HomeScreen() {
         onSuccess={handleAuthSuccess}
         onSwitchMode={handleSwitchAuthMode}
       />
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   loadingContainer: {
     flex: 1,

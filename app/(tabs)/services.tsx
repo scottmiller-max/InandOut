@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { Chrome as Home, Package, Truck, MapPin, Shield, Clock, Star, ArrowRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
@@ -15,8 +15,7 @@ export default function ServicesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <PageContainer>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.homeButton} onPress={handleGoHome}>
@@ -209,15 +208,13 @@ export default function ServicesScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',

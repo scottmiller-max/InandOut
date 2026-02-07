@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { MapPin, Navigation, Clock, Truck, Phone, MessageCircle } from 'lucide-react-native';
 import { BackButton } from '@/components/BackButton';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
@@ -36,8 +36,7 @@ export default function TrackScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <PageContainer>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
@@ -155,8 +154,6 @@ export default function TrackScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
-
       {/* Riley AI Assistant Widget */}
       <View style={styles.rileyContainer}>
         <RileyWidget
@@ -166,7 +163,7 @@ export default function TrackScreen() {
           }}
         />
       </View>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 

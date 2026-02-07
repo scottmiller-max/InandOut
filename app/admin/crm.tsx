@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { Users, Search, Star, Calendar, DollarSign, Phone, Mail, MapPin, Plus, X, Eye, Filter, Download, ChartBar as BarChart3, TrendingUp, ArrowLeft, MessageCircle, Brain, Briefcase, Star as StarIcon } from 'lucide-react-native';
 import { crmService, CRMCustomerData, CustomerReview } from '@/services/crm';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
@@ -142,7 +143,7 @@ export default function AdminCRMScreen() {
 
   if (accessDenied) {
     return (
-      <SafeAreaView style={styles.container}>
+      <PageContainer scroll={false}>
         <View style={styles.accessDeniedContainer}>
           <View style={styles.accessDeniedContent}>
             <Users size={64} color="#dc2626" />
@@ -156,15 +157,14 @@ export default function AdminCRMScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
+      </PageContainer>
     );
   }
 
   return (
     <ErrorBoundary>
       <PerformanceOptimizer>
-        <SafeAreaView style={styles.container}>
-          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <PageContainer>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -339,7 +339,6 @@ export default function AdminCRMScreen() {
             ))
           )}
         </View>
-          </ScrollView>
 
         {/* Customer Detail Modal */}
         <Modal
@@ -513,7 +512,7 @@ export default function AdminCRMScreen() {
             )}
           </SafeAreaView>
         </Modal>
-        </SafeAreaView>
+        </PageContainer>
       </PerformanceOptimizer>
     </ErrorBoundary>
   );

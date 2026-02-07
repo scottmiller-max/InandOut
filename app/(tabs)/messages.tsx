@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useState, useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { MessageCircle, Phone, Video, Bell, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, Info, Plus } from 'lucide-react-native';
 import { BackButton } from '@/components/BackButton';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
@@ -57,13 +57,12 @@ export default function MessagesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer>
       <View style={styles.headerWithBack}>
         {canGoBack && <BackButton onPress={goBack} />}
         <DateTimeDisplay />
         <GlobalSignOutButton compact />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Messages & Updates</Text>
           <View style={styles.headerActions}>
@@ -87,8 +86,6 @@ export default function MessagesScreen() {
             </TouchableOpacity>
           ))
         )}
-      </ScrollView>
-
       {/* Lightbox */}
       {showLightbox && selectedImage && (
         <PhotoLightbox visible={showLightbox} imageUri={selectedImage} onClose={closeLightbox} />
@@ -108,7 +105,7 @@ export default function MessagesScreen() {
 
       {/* Riley */}
       <RileyWidget />
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 

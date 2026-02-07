@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { PageContainer } from '@/components/PageContainer';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react-native';
 import { authService } from '@/services/auth';
 import { supabase } from '@/services/supabase';
@@ -74,16 +75,16 @@ export default function ResetPasswordScreen() {
 
   if (validToken === null) {
     return (
-      <View style={styles.container}>
+      <PageContainer scroll={false} noPadding>
         <ActivityIndicator size="large" color="#2563eb" />
         <Text style={styles.loadingText}>Verifying reset link...</Text>
-      </View>
+      </PageContainer>
     );
   }
 
   if (validToken === false) {
     return (
-      <View style={styles.container}>
+      <PageContainer scroll={false} noPadding>
         <View style={styles.errorCard}>
           <AlertCircle size={64} color="#dc2626" />
           <Text style={styles.errorTitle}>Invalid Reset Link</Text>
@@ -95,13 +96,13 @@ export default function ResetPasswordScreen() {
             <Text style={styles.backButtonText}>Back to Home</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </PageContainer>
     );
   }
 
   if (success) {
     return (
-      <View style={styles.container}>
+      <PageContainer scroll={false} noPadding>
         <View style={styles.successCard}>
           <CheckCircle size={64} color="#059669" />
           <Text style={styles.successTitle}>Password Reset Successful!</Text>
@@ -109,12 +110,12 @@ export default function ResetPasswordScreen() {
             Your password has been updated. Redirecting you to sign in...
           </Text>
         </View>
-      </View>
+      </PageContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <PageContainer scroll={false} noPadding>
       <View style={styles.card}>
         <Lock size={48} color="#2563eb" style={styles.icon} />
         <Text style={styles.title}>Reset Your Password</Text>
@@ -200,7 +201,7 @@ export default function ResetPasswordScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </PageContainer>
   );
 }
 

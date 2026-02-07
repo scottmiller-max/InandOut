@@ -1,16 +1,16 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 
 export default function AdminProfile() {
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer>
       <View style={styles.content}>
         <Text style={styles.title}>Admin Profile</Text>
         <Text style={styles.description}>
           Account settings and administrative preferences.
         </Text>
       </View>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 

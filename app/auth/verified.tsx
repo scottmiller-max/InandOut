@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { CircleCheck as CheckCircle, ArrowRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
@@ -37,7 +37,7 @@ export default function EmailVerifiedScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer scroll={false}>
       <View style={styles.content}>
         <View style={styles.successIcon}>
           <CheckCircle size={64} color="#10b981" />
@@ -57,7 +57,7 @@ export default function EmailVerifiedScreen() {
           Welcome to IN&OUT Moving! 🚚
         </Text>
       </View>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 

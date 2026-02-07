@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { User, Settings, LogOut, Mail, Phone, MapPin, Calendar, Shield, Bell } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
@@ -65,27 +65,27 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <PageContainer scroll={false}>
         <View style={styles.loadingContainer}>
           <LoadingSpinner message="Loading profile..." />
         </View>
-      </SafeAreaView>
+      </PageContainer>
     );
   }
 
   if (!user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <PageContainer scroll={false}>
         <View style={styles.emptyContainer}>
           <User size={64} color="#cbd5e1" />
           <Text style={styles.emptyText}>Please sign in to view your profile</Text>
         </View>
-      </SafeAreaView>
+      </PageContainer>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer>
       <View style={styles.header}>
         <DateTimeDisplay />
         <GlobalSignOutButton compact />
@@ -100,8 +100,6 @@ export default function ProfileScreen() {
           </Text>
         </View>
       )}
-
-      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -221,13 +219,11 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.appVersion}>IN&OUT Moving v1.0.0</Text>
         </View>
-      </ScrollView>
-
       {/* Riley AI Assistant Widget */}
       <View style={styles.rileyContainer}>
         <RileyWidget size="medium" />
       </View>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 

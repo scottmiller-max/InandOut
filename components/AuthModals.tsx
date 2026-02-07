@@ -221,6 +221,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <ScrollView contentContainerStyle={styles.scrollContent}>
+            <View style={styles.scrollInner}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.title}>
@@ -232,7 +233,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
             </View>
 
             <Text style={styles.subtitle}>
-              {mode === 'signup' 
+              {mode === 'signup'
                 ? 'Join IN&OUT Moving for seamless relocation services'
                 : 'Sign in to manage your moves and track progress'
               }
@@ -265,7 +266,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
             )}
 
             {/* Form */}
-            <View style={[styles.form, styles.centeredForm]}>
+            <View style={styles.form}>
               {/* Sign-up specific fields */}
               {mode === 'signup' && (
                 <>
@@ -437,6 +438,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 </TouchableOpacity>
               </View>
             </View>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
         )}
@@ -497,6 +499,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
+    alignItems: 'center',
+  },
+  scrollInner: {
+    width: '100%',
+    maxWidth: 480,
   },
   header: {
     flexDirection: 'row',
@@ -678,6 +685,9 @@ const styles = StyleSheet.create({
     padding: 16,
     margin: 20,
     borderRadius: 12,
+    maxWidth: 480,
+    alignSelf: 'center',
+    width: '100%',
   },
   emailBannerTitle: {
     fontSize: 16,
@@ -693,7 +703,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   centeredForm: {
-    maxWidth: 400,
+    maxWidth: 480,
     alignSelf: 'center',
     width: '100%',
   },

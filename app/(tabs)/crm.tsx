@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { Users, Search, Star, Calendar, DollarSign, Phone, Mail, MapPin, X, Eye } from 'lucide-react-native';
 import { CRMCustomerData } from '@/services/crm';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
@@ -25,7 +26,7 @@ export default function CRMScreen() {
 
   return (
     <ErrorBoundary>
-      <SafeAreaView style={styles.container}>
+      <PageContainer scroll={false}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.headerTitle}>CRM Dashboard</Text>
@@ -221,7 +222,7 @@ export default function CRMScreen() {
             </SafeAreaView>
           )}
         </Modal>
-      </SafeAreaView>
+      </PageContainer>
     </ErrorBoundary>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { PageContainer } from '@/components/PageContainer';
 import { Calculator, MapPin, Calendar, Chrome as Home, Package, Truck, Bot, Video, ArrowRight, Star, DollarSign } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModals } from '@/components/AuthModals';
@@ -152,15 +152,15 @@ export default function QuoteScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PageContainer>
       {/* Header */}
       <View style={styles.header}>
         <DateTimeDisplay />
         {isAuthenticated ? (
           <GlobalSignOutButton compact />
         ) : (
-          <TouchableOpacity 
-            style={styles.signInButton} 
+          <TouchableOpacity
+            style={styles.signInButton}
             onPress={() => {
               setAuthMode('signin');
               setShowAuthModal(true);
@@ -170,8 +170,6 @@ export default function QuoteScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <Image
@@ -350,8 +348,6 @@ export default function QuoteScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
-
       {/* Auth Modals */}
       <AuthModals
         visible={showAuthModal}
@@ -396,14 +392,13 @@ export default function QuoteScreen() {
       <View style={styles.rileyContainer}>
         <RileyWidget />
       </View>
-    </SafeAreaView>
+    </PageContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
