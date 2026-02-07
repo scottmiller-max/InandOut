@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Eye, EyeOff, Mail, Lock, User, Phone, CircleAlert as AlertCircle, CheckCircle } from 'lucide-react-native';
+import { X, Eye, EyeOff, Mail, Lock, User, Phone, CircleAlert as AlertCircle, CheckCircle, Briefcase, Users } from 'lucide-react-native';
 import { authService } from '@/services/auth';
 import { scrollUtils } from '@/utils/scrollUtils';
+
+type AuthFlow = 'customer' | 'employee';
 
 interface AuthModalsProps {
   visible: boolean;
@@ -20,15 +22,14 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   onSuccess,
   onSwitchMode,
 }) => {
-  // Form state
+  const [authFlow, setAuthFlow] = useState<AuthFlow>('customer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
-  
-  // UI state
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
   const [resetPasswordError, setResetPasswordError] = useState('');
 
-  // Reset form when modal closes or mode changes
   React.useEffect(() => {
     if (!visible) {
       resetForm();
@@ -61,44 +61,45 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     setResetPasswordError('');
   };
 
-  // Validation functions
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const switchFlow = (flow: AuthFlow) => {
+    resetForm();
+    setAuthFlow(flow);
+    if (flow === 'employee') {
+      onSwitchMode('signin');
+    }
   };
 
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 6;
+  const validateEmail = (value: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
+  const validatePassword = (value: string): boolean => {
+    return value.length >= 6;
   };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Email validation
     if (!email) {
       newErrors.email = 'Email is required';
     } else if (!validateEmail(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    // Password validation
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (!validatePassword(password)) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    // Sign-up specific validations
-    if (mode === 'signup') {
-      if (!firstName) {
-        newErrors.firstName = 'First name is required';
-      }
-      if (!lastName) {
-        newErrors.lastName = 'Last name is required';
-      }
-      if (!phone) {
-        newErrors.phone = 'Phone number is required';
-      }
+    const isSignUp = (authFlow === 'customer' && mode === 'signup') ||
+                     (authFlow === 'employee' && mode === 'signup');
+
+    if (isSignUp) {
+      if (!firstName) newErrors.firstName = 'First name is required';
+      if (!lastName) newErrors.lastName = 'Last name is required';
+      if (!phone) newErrors.phone = 'Phone number is required';
       if (!confirmPassword) {
         newErrors.confirmPassword = 'Please confirm your password';
       } else if (password !== confirmPassword) {
@@ -111,13 +112,14 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
-      if (mode === 'signup') {
+      const isSignUp = (authFlow === 'customer' && mode === 'signup') ||
+                       (authFlow === 'employee' && mode === 'signup');
+
+      if (isSignUp) {
         await authService.signUp(email, password, firstName, lastName, phone);
         setShowEmailBanner(true);
         setTimeout(() => {
@@ -127,10 +129,9 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
             setShowThankYou(false);
             onSuccess();
           }, 2000);
-        }, 10000); // Show email banner for exactly 10 seconds
+        }, 10000);
       } else {
         await authService.signIn(email, password);
-        // Scroll to top after successful sign in
         setTimeout(() => {
           if (typeof window !== 'undefined') {
             window.scrollTo?.({ top: 0, behavior: 'smooth' });
@@ -140,8 +141,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      
-      // Handle specific Supabase errors
       if (errorMessage.includes('Invalid login credentials')) {
         setErrors({ general: 'Invalid email or password. Please try again.' });
       } else if (errorMessage.includes('User already registered')) {
@@ -164,7 +163,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
       setResetPasswordError('Please enter your email address first.');
       return;
     }
-
     if (!validateEmail(email)) {
       setResetPasswordError('Please enter a valid email address.');
       return;
@@ -174,15 +172,34 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     try {
       await authService.resetPassword(email);
       setResetPasswordSuccess(true);
-      setTimeout(() => {
-        setResetPasswordSuccess(false);
-      }, 8000);
+      setTimeout(() => setResetPasswordSuccess(false), 8000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
       setResetPasswordError(errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  const isSignUp = (authFlow === 'customer' && mode === 'signup') ||
+                   (authFlow === 'employee' && mode === 'signup');
+
+  const getTitle = () => {
+    if (authFlow === 'employee') {
+      return mode === 'signup' ? 'Employee Registration' : 'Employee Sign In';
+    }
+    return mode === 'signup' ? 'Create Account' : 'Welcome Back';
+  };
+
+  const getSubtitle = () => {
+    if (authFlow === 'employee') {
+      return mode === 'signup'
+        ? 'Register your employee account for IN&OUT Moving'
+        : 'Sign in with your company credentials';
+    }
+    return mode === 'signup'
+      ? 'Join IN&OUT Moving for seamless relocation services'
+      : 'Sign in to manage your moves and track progress';
   };
 
   return (
@@ -193,7 +210,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container}>
-        {/* Email Verification Banner */}
         {showEmailBanner && (
           <View style={styles.emailBanner}>
             <Text style={styles.emailBannerTitle}>Check Your Email!</Text>
@@ -202,7 +218,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
             </Text>
           </View>
         )}
-        
+
         {showThankYou ? (
           <View style={styles.thankYouContainer}>
             <View style={styles.thankYouContent}>
@@ -216,30 +232,42 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
             </View>
           </View>
         ) : (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           style={styles.keyboardAvoid}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.scrollInner}>
-            {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>
-                {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
-              </Text>
+              <Text style={styles.title}>{getTitle()}</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <X size={24} color="#64748b" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.subtitle}>
-              {mode === 'signup'
-                ? 'Join IN&OUT Moving for seamless relocation services'
-                : 'Sign in to manage your moves and track progress'
-              }
-            </Text>
+            <Text style={styles.subtitle}>{getSubtitle()}</Text>
 
-            {/* Error Display */}
+            <View style={styles.flowToggle}>
+              <TouchableOpacity
+                style={[styles.flowButton, authFlow === 'customer' && styles.flowButtonActive]}
+                onPress={() => switchFlow('customer')}
+              >
+                <Users size={18} color={authFlow === 'customer' ? '#ffffff' : '#64748b'} />
+                <Text style={[styles.flowButtonText, authFlow === 'customer' && styles.flowButtonTextActive]}>
+                  Customer
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.flowButton, authFlow === 'employee' && styles.flowButtonActive]}
+                onPress={() => switchFlow('employee')}
+              >
+                <Briefcase size={18} color={authFlow === 'employee' ? '#ffffff' : '#64748b'} />
+                <Text style={[styles.flowButtonText, authFlow === 'employee' && styles.flowButtonTextActive]}>
+                  Team Member
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {errors.general && (
               <View style={styles.errorContainer}>
                 <AlertCircle size={16} color="#dc2626" />
@@ -247,7 +275,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               </View>
             )}
 
-            {/* Password Reset Success */}
             {resetPasswordSuccess && (
               <View style={styles.successContainer}>
                 <CheckCircle size={16} color="#059669" />
@@ -257,7 +284,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               </View>
             )}
 
-            {/* Password Reset Error */}
             {resetPasswordError && (
               <View style={styles.errorContainer}>
                 <AlertCircle size={16} color="#dc2626" />
@@ -265,10 +291,8 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               </View>
             )}
 
-            {/* Form */}
             <View style={styles.form}>
-              {/* Sign-up specific fields */}
-              {mode === 'signup' && (
+              {isSignUp && (
                 <>
                   <View style={styles.nameRow}>
                     <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
@@ -322,7 +346,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 </>
               )}
 
-              {/* Email */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Email Address *</Text>
                 <View style={styles.inputContainer}>
@@ -331,7 +354,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                     style={[styles.input, styles.inputWithIcon]}
                     value={email}
                     onChangeText={setEmail}
-                    placeholder="your@email.com"
+                    placeholder={authFlow === 'employee' ? 'you@inandoutmovin.com' : 'your@email.com'}
                     placeholderTextColor="#94a3b8"
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -341,7 +364,6 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 {errors.email && <Text style={styles.fieldError}>{errors.email}</Text>}
               </View>
 
-              {/* Password */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Password *</Text>
                 <View style={styles.inputContainer}>
@@ -369,8 +391,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 {errors.password && <Text style={styles.fieldError}>{errors.password}</Text>}
               </View>
 
-              {/* Confirm Password (Sign-up only) */}
-              {mode === 'signup' && (
+              {isSignUp && (
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Confirm Password *</Text>
                   <View style={styles.inputContainer}>
@@ -398,38 +419,35 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 </View>
               )}
 
-              {/* Submit Button */}
               <TouchableOpacity
                 style={[styles.submitButton, loading && styles.submitButtonDisabled]}
                 onPress={handleSubmit}
                 disabled={loading}
               >
                 <Text style={styles.submitButtonText}>
-                  {loading 
-                    ? 'Please wait...' 
-                    : mode === 'signup' 
-                      ? 'Create Account' 
+                  {loading
+                    ? 'Please wait...'
+                    : isSignUp
+                      ? (authFlow === 'employee' ? 'Register' : 'Create Account')
                       : 'Sign In'
                   }
                 </Text>
               </TouchableOpacity>
 
-              {/* Forgot Password (Sign-in only) */}
               {mode === 'signin' && (
                 <TouchableOpacity style={styles.forgotButton} onPress={handleForgotPassword}>
                   <Text style={styles.forgotButtonText}>Forgot Password?</Text>
                 </TouchableOpacity>
               )}
 
-              {/* Switch Mode */}
               <View style={styles.switchContainer}>
                 <Text style={styles.switchText}>
-                  {mode === 'signup' 
-                    ? 'Already have an account? ' 
+                  {mode === 'signup'
+                    ? 'Already have an account? '
                     : "Don't have an account? "
                   }
                 </Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => onSwitchMode(mode === 'signup' ? 'signin' : 'signup')}
                 >
                   <Text style={styles.switchButtonText}>
@@ -534,8 +552,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748b',
     fontFamily: 'Inter-Regular',
-    marginBottom: 32,
+    marginBottom: 24,
     lineHeight: 24,
+  },
+  flowToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 24,
+  },
+  flowButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 8,
+  },
+  flowButtonActive: {
+    backgroundColor: '#2563eb',
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  flowButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    fontFamily: 'Inter-SemiBold',
+  },
+  flowButtonTextActive: {
+    color: '#ffffff',
   },
   errorContainer: {
     flexDirection: 'row',
@@ -701,10 +752,5 @@ const styles = StyleSheet.create({
     color: '#1e40af',
     fontFamily: 'Inter-Regular',
     lineHeight: 20,
-  },
-  centeredForm: {
-    maxWidth: 480,
-    alignSelf: 'center',
-    width: '100%',
   },
 });

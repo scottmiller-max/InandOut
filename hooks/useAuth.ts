@@ -1,30 +1,43 @@
 import { useState, useEffect } from 'react';
 import { authService, User } from '@/services/auth';
 import { supabase } from '@/services/supabase';
+import { roleService, UserRole } from '@/services/roles';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(true);
 
+  const loadUserRole = async (userId: string) => {
+    const role = await roleService.getUserRole(userId);
+    setUserRole(role);
+    return role;
+  };
+
+  const buildUserData = (authUser: { id: string; email?: string | null; user_metadata?: Record<string, string>; created_at?: string }): User => ({
+    id: authUser.id,
+    email: authUser.email || '',
+    firstName: authUser.user_metadata?.firstName || '',
+    lastName: authUser.user_metadata?.lastName || '',
+    phone: authUser.user_metadata?.phone || '',
+    createdAt: authUser.created_at || '',
+  });
+
   useEffect(() => {
     checkAuthState();
-    
-    // Listen for auth state changes
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (session?.user) {
-          const userData: User = {
-            id: session.user.id,
-            email: session.user.email || '',
-            firstName: session.user.user_metadata?.firstName || '',
-            lastName: session.user.user_metadata?.lastName || '',
-            phone: session.user.user_metadata?.phone || '',
-            createdAt: session.user.created_at || '',
-          };
+          const userData = buildUserData(session.user);
           setUser(userData);
+          (async () => {
+            await loadUserRole(session.user.id);
+          })();
         } else {
           setUser(null);
+          setUserRole(null);
         }
         setLoading(false);
         setInitializing(false);
@@ -38,24 +51,16 @@ export const useAuth = () => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (!error && session?.user) {
-        const currentUser = session.user;
-        if (currentUser) {
-          const userData: User = {
-            id: currentUser.id,
-            email: currentUser.email || '',
-            firstName: currentUser.user_metadata?.firstName || '',
-            lastName: currentUser.user_metadata?.lastName || '',
-            phone: currentUser.user_metadata?.phone || '',
-            createdAt: currentUser.created_at || '',
-          };
-          setUser(userData);
-        }
+        const userData = buildUserData(session.user);
+        setUser(userData);
+        await loadUserRole(session.user.id);
       } else {
         setUser(null);
+        setUserRole(null);
       }
     } catch (error) {
-      // Silently handle auth errors during initialization
       setUser(null);
+      setUserRole(null);
     } finally {
       setLoading(false);
       setInitializing(false);
@@ -67,15 +72,9 @@ export const useAuth = () => {
       setLoading(true);
       const { user: authUser } = await authService.signIn(email, password);
       if (authUser) {
-        const userData: User = {
-          id: authUser.id,
-          email: authUser.email || '',
-          firstName: authUser.user_metadata?.firstName || '',
-          lastName: authUser.user_metadata?.lastName || '',
-          phone: authUser.user_metadata?.phone || '',
-          createdAt: authUser.created_at || '',
-        };
+        const userData = buildUserData(authUser);
         setUser(userData);
+        await loadUserRole(authUser.id);
       }
       return true;
     } catch (error) {
@@ -100,6 +99,7 @@ export const useAuth = () => {
           createdAt: authUser.created_at || '',
         };
         setUser(userData);
+        await loadUserRole(authUser.id);
       }
       return true;
     } catch (error) {
@@ -115,6 +115,7 @@ export const useAuth = () => {
       setLoading(true);
       await authService.signOut();
       setUser(null);
+      setUserRole(null);
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
@@ -123,13 +124,19 @@ export const useAuth = () => {
     }
   };
 
+  const isAdmin = userRole === 'admin' || userRole === 'master_admin';
+  const isStaff = isAdmin || userRole === 'dispatcher' || userRole === 'crew' || userRole === 'family_partner';
+
   return {
     user,
+    userRole,
     loading,
     initializing,
     signIn,
     signUp,
     signOut,
     isAuthenticated: !!user,
+    isAdmin,
+    isStaff,
   };
 };

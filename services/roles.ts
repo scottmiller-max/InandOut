@@ -23,15 +23,25 @@ class RoleService {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
+        .eq('user_id', userId);
 
       if (error) {
         console.error('Error fetching user role:', error);
         return null;
       }
 
-      return data?.role || null;
+      if (!data || data.length === 0) return null;
+
+      if (data.length === 1) return data[0].role as UserRole;
+
+      let highest: UserRole = data[0].role as UserRole;
+      for (let i = 1; i < data.length; i++) {
+        const role = data[i].role as UserRole;
+        if (this.getRoleHierarchyLevel(role) > this.getRoleHierarchyLevel(highest)) {
+          highest = role;
+        }
+      }
+      return highest;
     } catch (error) {
       console.error('Error in getUserRole:', error);
       return null;
