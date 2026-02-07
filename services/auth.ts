@@ -143,12 +143,8 @@ export const authService = {
   // Reset password
   resetPassword: async (email: string) => {
     try {
-      const redirectUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/auth/reset-password`
-        : 'https://app.inandoutmovin.com/auth/reset-password';
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: 'https://inandoutmovin.com/reset-password',
       });
       if (error) throw error;
     } catch (error) {

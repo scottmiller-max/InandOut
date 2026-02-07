@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, KeyboardAvo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Eye, EyeOff, Mail, Lock, User, Phone, CircleAlert as AlertCircle, CheckCircle, Briefcase, Users } from 'lucide-react-native';
 import { authService } from '@/services/auth';
-import { scrollUtils } from '@/utils/scrollUtils';
+import { supabase } from '@/services/supabase';
 
 type AuthFlow = 'customer' | 'employee';
 
@@ -156,26 +156,35 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   };
 
   const handleForgotPassword = async () => {
+    const cleanEmail = (email || '').trim();
+
     setResetPasswordSuccess(false);
     setResetPasswordError('');
 
-    if (!email) {
+    if (!cleanEmail) {
       setResetPasswordError('Please enter your email address first.');
       return;
     }
-    if (!validateEmail(email)) {
+    if (!validateEmail(cleanEmail)) {
       setResetPasswordError('Please enter a valid email address.');
       return;
     }
 
     setLoading(true);
     try {
-      await authService.resetPassword(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: 'https://inandoutmovin.com/reset-password',
+      });
+
+      if (error) {
+        setResetPasswordError(error.message || 'Could not send reset email.');
+        return;
+      }
+
       setResetPasswordSuccess(true);
       setTimeout(() => setResetPasswordSuccess(false), 8000);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
-      setResetPasswordError(errorMessage);
+    } catch (e) {
+      setResetPasswordError('Something went wrong sending the reset email.');
     } finally {
       setLoading(false);
     }
@@ -435,8 +444,10 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               </TouchableOpacity>
 
               {mode === 'signin' && (
-                <TouchableOpacity style={styles.forgotButton} onPress={handleForgotPassword}>
-                  <Text style={styles.forgotButtonText}>Forgot Password?</Text>
+                <TouchableOpacity style={styles.forgotButton} onPress={handleForgotPassword} disabled={loading}>
+                  <Text style={styles.forgotButtonText}>
+                    {loading ? 'Sending...' : 'Forgot Password?'}
+                  </Text>
                 </TouchableOpacity>
               )}
 
