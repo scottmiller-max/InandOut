@@ -1,9 +1,17 @@
 /**
- * Slack Messaging Integration
+ * Slack Messaging Integration (client-side)
+ *
+ * SECURITY: this file no longer contains the Slack webhook URL or bot token.
+ * Those secrets used to be EXPO_PUBLIC_* env vars, which ship inside the app
+ * bundle and can be extracted by anyone. They now live only on the server in the
+ * `slack-notify` edge function. This module just builds the message payload and
+ * hands it to that function via an authenticated Supabase call.
+ *
+ * The public API (slackMessaging.*, formatJobForSlack) is unchanged, so existing
+ * callers (services/adminNotifications.ts, utils/testSlackIntegration.ts) keep working.
  */
 
-const SLACK_WEBHOOK_URL = process.env.EXPO_PUBLIC_SLACK_WEBHOOK_URL || '';
-const SLACK_BOT_TOKEN = process.env.EXPO_PUBLIC_SLACK_BOT_TOKEN || '';
+import { supabase } from './supabase';
 
 export interface SlackMessage {
   text: string;
@@ -43,27 +51,25 @@ export interface SlackBlock {
   elements?: any[];
 }
 
+async function invokeSlack(payload: Record<string, unknown>): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.functions.invoke('slack-notify', {
+      body: payload,
+    });
+    if (error) {
+      console.error('slack-notify invocation failed:', error.message);
+      return false;
+    }
+    return (data as { ok?: boolean })?.ok === true;
+  } catch (error) {
+    console.error('Failed to send Slack notification:', error);
+    return false;
+  }
+}
+
 export const slackMessaging = {
   sendNotification: async (message: SlackMessage): Promise<boolean> => {
-    if (!SLACK_WEBHOOK_URL) {
-      console.warn('Slack webhook URL not configured');
-      return false;
-    }
-
-    try {
-      const response = await fetch(SLACK_WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message),
-      });
-
-      return response.ok;
-    } catch (error) {
-      console.error('Failed to send Slack notification:', error);
-      return false;
-    }
+    return await invokeSlack({ mode: 'webhook', message });
   },
 
   notifyNewJob: async (jobNumber: string, customerName: string, serviceType: string, jobDate: string): Promise<boolean> => {
@@ -75,21 +81,9 @@ export const slackMessaging = {
           color: '#2563eb',
           title: `Job ${jobNumber}`,
           fields: [
-            {
-              title: 'Customer',
-              value: customerName,
-              short: true,
-            },
-            {
-              title: 'Service Type',
-              value: serviceType,
-              short: true,
-            },
-            {
-              title: 'Job Date',
-              value: jobDate,
-              short: false,
-            },
+            { title: 'Customer', value: customerName, short: true },
+            { title: 'Service Type', value: serviceType, short: true },
+            { title: 'Job Date', value: jobDate, short: false },
           ],
           footer: 'IN&OUT Moving',
           ts: Math.floor(Date.now() / 1000),
@@ -114,16 +108,8 @@ export const slackMessaging = {
           color: statusColors[newStatus] || '#64748b',
           title: `Job ${jobNumber} - Status Update`,
           fields: [
-            {
-              title: 'Customer',
-              value: customerName,
-              short: true,
-            },
-            {
-              title: 'Status Change',
-              value: `${oldStatus} → ${newStatus}`,
-              short: true,
-            },
+            { title: 'Customer', value: customerName, short: true },
+            { title: 'Status Change', value: `${oldStatus} → ${newStatus}`, short: true },
           ],
           footer: 'IN&OUT Moving',
           ts: Math.floor(Date.now() / 1000),
@@ -142,11 +128,7 @@ export const slackMessaging = {
           title: `Message from ${customerName}`,
           text: message,
           fields: [
-            {
-              title: 'Job Number',
-              value: jobNumber,
-              short: true,
-            },
+            { title: 'Job Number', value: jobNumber, short: true },
           ],
           footer: 'IN&OUT Moving',
           ts: Math.floor(Date.now() / 1000),
@@ -157,11 +139,7 @@ export const slackMessaging = {
 
   sendUrgentAlert: async (title: string, message: string, details?: Record<string, string>): Promise<boolean> => {
     const fields = details
-      ? Object.entries(details).map(([key, value]) => ({
-          title: key,
-          value,
-          short: true,
-        }))
+      ? Object.entries(details).map(([key, value]) => ({ title: key, value, short: true }))
       : [];
 
     return await slackMessaging.sendNotification({
@@ -181,31 +159,7 @@ export const slackMessaging = {
   },
 
   postToChannel: async (channel: string, text: string, blocks?: SlackBlock[]): Promise<boolean> => {
-    if (!SLACK_BOT_TOKEN) {
-      console.warn('Slack bot token not configured');
-      return false;
-    }
-
-    try {
-      const response = await fetch('https://slack.com/api/chat.postMessage', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
-        },
-        body: JSON.stringify({
-          channel,
-          text,
-          blocks,
-        }),
-      });
-
-      const data = await response.json();
-      return data.ok === true;
-    } catch (error) {
-      console.error('Failed to post to Slack channel:', error);
-      return false;
-    }
+    return await invokeSlack({ mode: 'channel', channel, text, blocks });
   },
 };
 
@@ -215,26 +169,10 @@ export function formatJobForSlack(job: any): SlackAttachment {
     color: '#2563eb',
     title: `Job ${job.job_number}`,
     fields: [
-      {
-        title: 'Customer',
-        value: job.customer_name || 'N/A',
-        short: true,
-      },
-      {
-        title: 'Status',
-        value: job.status || 'N/A',
-        short: true,
-      },
-      {
-        title: 'Service Type',
-        value: job.service_type || 'N/A',
-        short: true,
-      },
-      {
-        title: 'Date',
-        value: job.job_date || 'N/A',
-        short: true,
-      },
+      { title: 'Customer', value: job.customer_name || 'N/A', short: true },
+      { title: 'Status', value: job.status || 'N/A', short: true },
+      { title: 'Service Type', value: job.service_type || 'N/A', short: true },
+      { title: 'Date', value: job.job_date || 'N/A', short: true },
     ],
     footer: 'IN&OUT Moving',
     ts: Math.floor(Date.now() / 1000),

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { requireRole, jsonError, STAFF_ROLES } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,12 @@ Deno.serve(async (req: Request) => {
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // AUTHORIZATION: this returns full customer PII (profile, jobs, interactions,
+  // AI summaries, call logs). Staff only. Without this check anyone could
+  // enumerate customer records by email.
+  const auth = await requireRole(req, STAFF_ROLES);
+  if (!auth.authorized) return jsonError(auth.error!, auth.status, corsHeaders);
 
   try {
     // Support both GET (query params) and POST (body)

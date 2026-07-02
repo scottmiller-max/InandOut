@@ -1,0 +1,57 @@
+# Supabase project config — pins the edge-function JWT posture in version control
+# instead of leaving it to the dashboard. `verify_jwt` is the platform-level gate
+# Supabase applies BEFORE your code runs.
+#
+#   verify_jwt = true   -> caller must present a valid Supabase JWT (anon or user).
+#                          NOTE: the anon key is public, so this alone is NOT real
+#                          authorization — our in-code requireRole/requireStaffOrSecret
+#                          checks are what actually protect these functions.
+#   verify_jwt = false  -> function is reachable without a Supabase JWT. Required for
+#                          third-party webhooks that can't send one. These MUST verify
+#                          their own shared secret in code (we do).
+#
+# After changing this file, redeploy the affected functions.
+
+project_id = "REPLACE_WITH_YOUR_SUPABASE_PROJECT_REF"
+
+# --- Public / machine endpoints: no Supabase JWT, own verification in code ---
+[functions.stripe-webhook]
+verify_jwt = false            # verifies Stripe signature in code
+
+[functions.vapi-webhook]
+verify_jwt = false            # now verifies VAPI_WEBHOOK_SECRET in code
+
+[functions.contact-submit]
+verify_jwt = false            # public website contact form (see note in APPLY.md)
+
+# --- Everything else requires a JWT at the platform edge AND a role/secret in code ---
+[functions.get-customer-profile]
+verify_jwt = true
+[functions.send-sms]
+verify_jwt = true
+[functions.send-email]
+verify_jwt = true
+[functions.log-interaction]
+verify_jwt = true
+[functions.riley-chat]
+verify_jwt = true
+[functions.riley-summary]
+verify_jwt = true
+[functions.riley-call-summary]
+verify_jwt = true
+[functions.slack-notify]
+verify_jwt = true
+[functions.create-customer]
+verify_jwt = true
+[functions.search-customers]
+verify_jwt = true
+[functions.get-assigned-jobs]
+verify_jwt = true
+[functions.get-document]
+verify_jwt = true
+[functions.approve-draft-job]
+verify_jwt = true
+[functions.promote-contact]
+verify_jwt = true
+[functions.stripe-checkout]
+verify_jwt = true

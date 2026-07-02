@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { requireRole, jsonError, STAFF_ROLES } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -58,6 +59,10 @@ Deno.serve(async (req: Request) => {
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // AUTHORIZATION: generates/stores AI summaries over customer CRM data. Staff only.
+  const auth = await requireRole(req, STAFF_ROLES);
+  if (!auth.authorized) return jsonError(auth.error!, auth.status, corsHeaders);
 
   try {
     const body: SummaryRequest = await req.json();

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { verifyWebhookSecret, jsonError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,6 +60,13 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: "Method not allowed" }),
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  }
+
+  // AUTHENTICITY: this webhook writes call data with the service role. Verify the
+  // shared secret Vapi is configured to send (Vapi "Server URL Secret", delivered
+  // in the `x-vapi-secret` header) so forged call records can't be injected.
+  if (!verifyWebhookSecret(req, "VAPI_WEBHOOK_SECRET", "x-vapi-secret")) {
+    return jsonError("Invalid or missing webhook secret", 401, corsHeaders);
   }
 
   try {

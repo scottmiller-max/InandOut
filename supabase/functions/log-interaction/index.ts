@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { requireStaffOrSecret, jsonError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,6 +31,11 @@ Deno.serve(async (req: Request) => {
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // AUTHORIZATION: writes interaction records against customers. Staff JWT or the
+  // internal shared secret (automated call/SMS logging).
+  const auth = await requireStaffOrSecret(req);
+  if (!auth.authorized) return jsonError(auth.error!, auth.status, corsHeaders);
 
   try {
     const body: LogInteractionRequest = await req.json();
