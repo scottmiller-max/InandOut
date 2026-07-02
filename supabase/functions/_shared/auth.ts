@@ -162,6 +162,38 @@ export async function requireStaffOrSecret(
   return requireRole(req, allowedRoles, supabase);
 }
 
+/**
+ * Allow ANY authenticated user (staff OR customer) OR the internal shared secret.
+ * Unlike requireStaffOrSecret, this does NOT require a user_roles row — customers
+ * don't have one. Use for transactional functions that legitimately run in a
+ * customer's session (e.g. send-email for a booking confirmation the customer
+ * triggered). It still blocks fully anonymous callers.
+ *
+ * NOTE: an authenticated customer can still ask this to send arbitrary content, so
+ * treat this as a stopgap — the durable fix is to constrain customer-facing sends to
+ * fixed templates addressed to the customer's own contact info.
+ */
+export async function requireUserOrSecret(
+  req: Request,
+  secretEnvVar = "INTERNAL_FUNCTION_SECRET",
+  supabase?: SupabaseClient,
+): Promise<AuthResult> {
+  if (verifyWebhookSecret(req, secretEnvVar, "x-internal-secret")) {
+    return { authorized: true, status: 200, viaSecret: true, role: "internal" };
+  }
+  const sb = supabase ?? serviceClient();
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return { authorized: false, status: 401, error: "Missing authorization header" };
+  }
+  const token = authHeader.replace("Bearer ", "").trim();
+  const { data: { user }, error } = await sb.auth.getUser(token);
+  if (error || !user) {
+    return { authorized: false, status: 401, error: "Invalid or expired token" };
+  }
+  return { authorized: true, status: 200, user: { id: user.id, email: user.email ?? "" } };
+}
+
 /** Small helper to return a JSON error with CORS headers. */
 export function jsonError(
   message: string,

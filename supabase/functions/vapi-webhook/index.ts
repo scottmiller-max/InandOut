@@ -346,6 +346,9 @@ async function triggerCallSummary(
       method: "POST",
       headers: {
         "Authorization": `Bearer ${supabaseAnonKey}`,
+        // riley-call-summary is gated; this internal call authenticates with the
+        // shared secret so it isn't rejected as an anonymous request.
+        "x-internal-secret": Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

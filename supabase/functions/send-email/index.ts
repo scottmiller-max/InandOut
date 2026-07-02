@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
-import { requireStaffOrSecret, jsonError } from "../_shared/auth.ts";
+import { requireUserOrSecret, jsonError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,10 +24,11 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // AUTHORIZATION: sends mail through your SMTP account. Staff JWT or the internal
-  // shared secret (for automated notifications). Without this it's an open relay
-  // that lets anyone send email as your company (phishing/spam).
-  const auth = await requireStaffOrSecret(req);
+  // AUTHORIZATION: sends mail through your SMTP account. Any authenticated user
+  // (staff OR a customer triggering their own booking confirmation) or the internal
+  // shared secret. Without this it's an open relay that lets anyone send email as
+  // your company (phishing/spam).
+  const auth = await requireUserOrSecret(req);
   if (!auth.authorized) return jsonError(auth.error!, auth.status, corsHeaders);
 
   try {
