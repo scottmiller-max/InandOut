@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { requireStaffOrSecret, jsonError, ADMIN_ROLES } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,8 +27,20 @@ Deno.serve(async (req: Request) => {
     );
   }
 
+  // AUTHORIZATION: sends SMS via your paid Twilio account. Staff JWT or the
+  // internal shared secret (for automated server-to-server notifications).
+  // Without this, anyone could send arbitrary texts on your account (toll fraud/spam).
+  const auth = await requireStaffOrSecret(req);
+  if (!auth.authorized) return jsonError(auth.error!, auth.status, corsHeaders);
+
   try {
     const body: SendSMSRequest = await req.json();
+
+    // The consent bypass is dangerous (TCPA). Only allow it for internal automated
+    // callers (shared secret) or admins — never for a plain dispatcher/UI request.
+    if (body.skip_consent_check && !(auth.viaSecret || ADMIN_ROLES.includes(auth.role ?? ""))) {
+      return jsonError("Not permitted to skip SMS consent check", 403, corsHeaders);
+    }
 
     // Validate required fields
     if (!body.to || !body.message) {

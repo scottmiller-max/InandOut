@@ -68,7 +68,7 @@ export default function Home() {
       <TouchableOpacity style={styles.touchArea} onPress={handleTapToStart} activeOpacity={1}>
         <Animated.View style={[styles.logoContainer, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}>
           <Image
-            source={require('@/assets/images/scott\'s_moving_company_logo.png')}
+            source={require('@/assets/images/inout-logo.png')}
             style={styles.logoImage}
             resizeMode="contain"
           />

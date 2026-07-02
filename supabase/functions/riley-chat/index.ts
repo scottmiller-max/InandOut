@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { identifyActor } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -72,52 +73,104 @@ Deno.serve(async (req: Request) => {
     const vapiApiKey = Deno.env.get("VAPI_API_KEY");
     const vapiAssistantId = Deno.env.get("VAPI_ASSISTANT_ID");
 
+    // Riley is dual-role: internal staff agent AND customer-facing agent. Classify the
+    // caller and scope data access accordingly. This is what prevents a customer (or an
+    // anonymous website visitor) from reading another customer's CRM record.
+    const actor = await identifyActor(req, supabase);
+
     let customer: CustomerData | null = null;
 
-    if (body.customer_id) {
-      const { data } = await supabase
-        .from("customers")
-        .select("id, full_name, email, phone, source")
-        .eq("id", body.customer_id)
-        .maybeSingle();
-      customer = data;
-    } else if (body.customer_email) {
-      const { data } = await supabase
-        .from("customers")
-        .select("id, full_name, email, phone, source")
-        .eq("email", body.customer_email)
-        .maybeSingle();
-      customer = data;
-    } else if (body.customer_phone) {
-      const { data } = await supabase
-        .from("customers")
-        .select("id, full_name, email, phone, source")
-        .eq("phone", body.customer_phone)
-        .maybeSingle();
-      customer = data;
-    }
-
-    if (!customer && (body.customer_email || body.customer_phone || body.customer_name)) {
-      const newCustomer = {
-        full_name: body.customer_name || "Unknown",
-        email: body.customer_email || `${Date.now()}@unknown.placeholder`,
-        phone: body.customer_phone || "",
-        source: body.channel === "sms" ? "sms" : body.channel === "call" ? "phone" : "chat",
-        last_interaction_at: new Date().toISOString(),
-      };
-
-      const { data, error } = await supabase
-        .from("customers")
-        .insert(newCustomer)
-        .select("id, full_name, email, phone, source")
-        .single();
-
-      if (error) {
-        console.error("Failed to create customer:", error);
-      } else {
+    if (actor.mode === "staff") {
+      // Staff (dispatcher/admin) may look up or create ANY customer by the identifiers
+      // supplied in the request.
+      if (body.customer_id) {
+        const { data } = await supabase
+          .from("customers")
+          .select("id, full_name, email, phone, source")
+          .eq("id", body.customer_id)
+          .maybeSingle();
+        customer = data;
+      } else if (body.customer_email) {
+        const { data } = await supabase
+          .from("customers")
+          .select("id, full_name, email, phone, source")
+          .eq("email", body.customer_email)
+          .maybeSingle();
+        customer = data;
+      } else if (body.customer_phone) {
+        const { data } = await supabase
+          .from("customers")
+          .select("id, full_name, email, phone, source")
+          .eq("phone", body.customer_phone)
+          .maybeSingle();
         customer = data;
       }
+
+      if (!customer && (body.customer_email || body.customer_phone || body.customer_name)) {
+        const newCustomer = {
+          full_name: body.customer_name || "Unknown",
+          email: body.customer_email || `${Date.now()}@unknown.placeholder`,
+          phone: body.customer_phone || "",
+          source: body.channel === "sms" ? "sms" : body.channel === "call" ? "phone" : "chat",
+          last_interaction_at: new Date().toISOString(),
+        };
+
+        const { data, error } = await supabase
+          .from("customers")
+          .insert(newCustomer)
+          .select("id, full_name, email, phone, source")
+          .single();
+
+        if (error) {
+          console.error("Failed to create customer:", error);
+        } else {
+          customer = data;
+        }
+      }
+    } else if (actor.mode === "customer") {
+      // Signed-in customer: HARD-SCOPE to their own record. Any customer_id / email /
+      // phone in the request body is deliberately ignored so a customer can never pull
+      // another customer's data through Riley.
+      const { data: own } = await supabase
+        .from("customers")
+        .select("id, full_name, email, phone, source")
+        .eq("user_id", actor.userId!)
+        .maybeSingle();
+      customer = own;
+
+      if (!customer && actor.email) {
+        const { data: byEmail } = await supabase
+          .from("customers")
+          .select("id, full_name, email, phone, source")
+          .eq("email", actor.email)
+          .maybeSingle();
+        customer = byEmail;
+      }
+
+      if (!customer && actor.email) {
+        // First-time signed-in customer with no CRM record yet — create one linked to
+        // their auth user so future chats resolve to the same record.
+        const { data, error } = await supabase
+          .from("customers")
+          .insert({
+            user_id: actor.userId,
+            full_name: body.customer_name || actor.email,
+            email: actor.email,
+            phone: body.customer_phone || "",
+            source: body.channel === "sms" ? "sms" : body.channel === "call" ? "phone" : "chat",
+            last_interaction_at: new Date().toISOString(),
+          })
+          .select("id, full_name, email, phone, source")
+          .single();
+        if (error) {
+          console.error("Failed to create customer:", error);
+        } else {
+          customer = data;
+        }
+      }
     }
+    // actor.mode === "anon": no customer context is attached. Riley answers general
+    // questions only (services, hours, quote process) — no CRM lookups or writes.
 
     let conversationHistory: InteractionRecord[] = [];
     let latestSummary: AISummary | null = null;

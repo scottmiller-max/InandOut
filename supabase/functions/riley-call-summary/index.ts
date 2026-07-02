@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { requireStaffOrSecret, jsonError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,6 +41,10 @@ Deno.serve(async (req: Request) => {
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // AUTHORIZATION: called after a Vapi call (internal secret) or manually by staff.
+  const auth = await requireStaffOrSecret(req);
+  if (!auth.authorized) return jsonError(auth.error!, auth.status, corsHeaders);
 
   try {
     const body: CallSummaryRequest = await req.json();
