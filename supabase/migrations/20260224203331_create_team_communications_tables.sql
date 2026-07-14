@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS team_announcements (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 -- Announcement read tracking
 CREATE TABLE IF NOT EXISTS team_announcement_reads (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,6 +72,8 @@ CREATE TABLE IF NOT EXISTS team_announcement_reads (
   read_at timestamptz DEFAULT now(),
   UNIQUE(announcement_id, user_id)
 );
+
+
 
 -- Team Messages (staff-to-staff)
 CREATE TABLE IF NOT EXISTS team_messages (
@@ -87,19 +91,41 @@ CREATE TABLE IF NOT EXISTS team_messages (
   created_at timestamptz DEFAULT now()
 );
 
+
+
 -- Enable RLS
 ALTER TABLE team_announcements ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE team_announcement_reads ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE team_messages ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_team_announcements_active ON team_announcements(is_active, expires_at);
+
+
 CREATE INDEX IF NOT EXISTS idx_team_announcements_created ON team_announcements(created_at DESC);
+
+
 CREATE INDEX IF NOT EXISTS idx_team_announcement_reads_user ON team_announcement_reads(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_team_messages_recipient ON team_messages(recipient_id, is_read);
+
+
 CREATE INDEX IF NOT EXISTS idx_team_messages_sender ON team_messages(sender_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_jobs_move_date ON jobs(move_date);
+
+
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+
+
 
 -- RLS Policies for team_announcements
 CREATE POLICY "Staff can view active announcements for their role"
@@ -115,6 +141,8 @@ CREATE POLICY "Staff can view active announcements for their role"
     )
   );
 
+
+
 CREATE POLICY "Admins can create announcements"
   ON team_announcements FOR INSERT
   TO authenticated
@@ -125,6 +153,8 @@ CREATE POLICY "Admins can create announcements"
       AND user_roles.role IN ('master_admin', 'admin', 'dispatcher')
     )
   );
+
+
 
 CREATE POLICY "Admins can update their announcements"
   ON team_announcements FOR UPDATE
@@ -146,6 +176,8 @@ CREATE POLICY "Admins can update their announcements"
     )
   );
 
+
+
 CREATE POLICY "Admins can delete announcements"
   ON team_announcements FOR DELETE
   TO authenticated
@@ -157,16 +189,22 @@ CREATE POLICY "Admins can delete announcements"
     )
   );
 
+
+
 -- RLS Policies for team_announcement_reads
 CREATE POLICY "Users can mark announcements as read"
   ON team_announcement_reads FOR INSERT
   TO authenticated
   WITH CHECK (user_id = auth.uid());
 
+
+
 CREATE POLICY "Users can view their own read status"
   ON team_announcement_reads FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
+
+
 
 -- RLS Policies for team_messages
 CREATE POLICY "Users can view messages they sent or received"
@@ -177,6 +215,8 @@ CREATE POLICY "Users can view messages they sent or received"
     OR recipient_id = auth.uid()
     OR recipient_id IS NULL
   );
+
+
 
 CREATE POLICY "Staff can send messages"
   ON team_messages FOR INSERT
@@ -190,11 +230,15 @@ CREATE POLICY "Staff can send messages"
     )
   );
 
+
+
 CREATE POLICY "Recipients can update read status"
   ON team_messages FOR UPDATE
   TO authenticated
   USING (recipient_id = auth.uid())
   WITH CHECK (recipient_id = auth.uid());
+
+
 
 -- Function to get unread announcement count for current user
 CREATE OR REPLACE FUNCTION get_unread_announcements_count()
@@ -217,7 +261,11 @@ AS $$
       WHERE tar.announcement_id = ta.id
       AND tar.user_id = auth.uid()
     );
+
+
 $$;
+
+
 
 -- Function to search customers by multiple fields
 CREATE OR REPLACE FUNCTION search_customers(
@@ -248,7 +296,11 @@ BEGIN
     AND user_roles.role IN ('master_admin', 'admin', 'dispatcher', 'crew')
   ) THEN
     RAISE EXCEPTION 'Access denied';
+
+
   END IF;
+
+
 
   RETURN QUERY
   SELECT 
@@ -289,8 +341,14 @@ BEGIN
     END
   ORDER BY c.full_name
   LIMIT 50;
+
+
 END;
+
+
 $$;
+
+
 
 -- Function to get jobs for calendar view
 CREATE OR REPLACE FUNCTION get_calendar_jobs(
@@ -324,7 +382,11 @@ BEGIN
     AND user_roles.role IN ('master_admin', 'admin', 'dispatcher', 'crew')
   ) THEN
     RAISE EXCEPTION 'Access denied';
+
+
   END IF;
+
+
 
   RETURN QUERY
   SELECT 
@@ -346,8 +408,14 @@ BEGIN
   WHERE j.move_date >= start_date
     AND j.move_date <= end_date
   ORDER BY j.move_date, j.move_time;
+
+
 END;
+
+
 $$;
+
+
 
 -- Function to get admin dashboard stats
 CREATE OR REPLACE FUNCTION get_admin_dashboard_stats()
@@ -358,6 +426,8 @@ STABLE
 AS $$
 DECLARE
   result json;
+
+
 BEGIN
   -- Verify caller is staff
   IF NOT EXISTS (
@@ -366,7 +436,11 @@ BEGIN
     AND user_roles.role IN ('master_admin', 'admin', 'dispatcher')
   ) THEN
     RAISE EXCEPTION 'Access denied';
+
+
   END IF;
+
+
 
   SELECT json_build_object(
     'jobs_today', (
@@ -409,6 +483,12 @@ BEGIN
     )
   ) INTO result;
 
+
+
   RETURN result;
+
+
 END;
+
+
 $$;

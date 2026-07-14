@@ -15,10 +15,14 @@
 -- Enable RLS on rate_limits
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 
+
+
 -- Only service role (Edge Functions) can manage rate limits
 CREATE POLICY "Service role manages rate limits"
   ON rate_limits
   FOR ALL
   TO authenticated
   USING (false)  -- No direct user access
-  WITH CHECK (false);  -- No direct user writes
+  WITH CHECK (false);
+
+  -- No direct user writes;

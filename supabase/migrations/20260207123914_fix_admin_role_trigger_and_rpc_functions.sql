@@ -22,21 +22,33 @@
 DO $$
 DECLARE
   target_user_id uuid;
+
+
 BEGIN
   SELECT id INTO target_user_id
   FROM public.users
   WHERE email = 'scottmiller@inandoutmovin.com';
+
+
 
   IF target_user_id IS NOT NULL THEN
     INSERT INTO public.user_roles (user_id, role, created_at, updated_at)
     VALUES (target_user_id, 'master_admin', NOW(), NOW())
     ON CONFLICT (user_id, role) DO NOTHING;
 
+
+
     UPDATE public.users
     SET first_name = 'Scott', last_name = 'Miller'
     WHERE id = target_user_id AND (first_name = '' OR first_name IS NULL);
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- 2. Replace the trigger function to check correct email
 CREATE OR REPLACE FUNCTION public.handle_new_user_role()
@@ -50,15 +62,27 @@ BEGIN
     INSERT INTO public.user_roles (user_id, role, created_at, updated_at)
     VALUES (NEW.id, 'master_admin', NOW(), NOW())
     ON CONFLICT (user_id, role) DO NOTHING;
+
+
   END IF;
+
+
 
   INSERT INTO public.user_roles (user_id, role, created_at, updated_at)
   VALUES (NEW.id, 'customer', NOW(), NOW())
   ON CONFLICT (user_id, role) DO NOTHING;
 
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$;
+
+
 
 -- 3. Create user_is_admin RPC function
 CREATE OR REPLACE FUNCTION public.user_is_admin(user_uuid uuid)
@@ -73,10 +97,18 @@ BEGIN
     WHERE user_id = user_uuid
     AND role IN ('admin', 'master_admin')
   );
+
+
 END;
+
+
 $$;
 
+
+
 GRANT EXECUTE ON FUNCTION public.user_is_admin(uuid) TO authenticated;
+
+
 
 -- 4. Create user_has_permission RPC function
 CREATE OR REPLACE FUNCTION public.user_has_permission(user_uuid uuid, permission_name text)
@@ -93,7 +125,13 @@ BEGIN
     WHERE ur.user_id = user_uuid
     AND rp.permission = permission_name
   );
+
+
 END;
+
+
 $$;
+
+
 
 GRANT EXECUTE ON FUNCTION public.user_has_permission(uuid, text) TO authenticated;

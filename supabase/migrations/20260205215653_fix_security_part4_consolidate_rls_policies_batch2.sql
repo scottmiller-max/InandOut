@@ -21,9 +21,17 @@
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage all customers" ON customers;
+
+
 DROP POLICY IF EXISTS "Admins can view all customers" ON customers;
+
+
 DROP POLICY IF EXISTS "Staff can read customers" ON customers;
+
+
 DROP POLICY IF EXISTS "Users can view their own customer record" ON customers;
+
+
 
 CREATE POLICY "Users can view customer records"
   ON customers
@@ -39,12 +47,18 @@ CREATE POLICY "Users can view customer records"
     )
   );
 
+
+
 -- ============================================================================
 -- DOCUMENT_ACKNOWLEDGEMENTS: Consolidate INSERT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Service role full access to acknowledgements" ON document_acknowledgements;
+
+
 DROP POLICY IF EXISTS "Users can insert own acknowledgements" ON document_acknowledgements;
+
+
 
 CREATE POLICY "Users can insert acknowledgements"
   ON document_acknowledgements
@@ -52,10 +66,18 @@ CREATE POLICY "Users can insert acknowledgements"
   TO authenticated
   WITH CHECK (user_id = auth.uid());
 
+
+
 -- DOCUMENT_ACKNOWLEDGEMENTS: Consolidate SELECT policies
 DROP POLICY IF EXISTS "Admin and dispatcher can read acknowledgements" ON document_acknowledgements;
+
+
 DROP POLICY IF EXISTS "Master admin can read all acknowledgements" ON document_acknowledgements;
+
+
 DROP POLICY IF EXISTS "Users can read own acknowledgements" ON document_acknowledgements;
+
+
 
 CREATE POLICY "Users can read acknowledgements"
   ON document_acknowledgements
@@ -71,12 +93,18 @@ CREATE POLICY "Users can read acknowledgements"
     )
   );
 
+
+
 -- ============================================================================
 -- DOCUMENT_TEMPLATES: Consolidate SELECT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage templates" ON document_templates;
+
+
 DROP POLICY IF EXISTS "All authenticated users can view active templates" ON document_templates;
+
+
 
 CREATE POLICY "Users can view active templates"
   ON document_templates
@@ -92,15 +120,27 @@ CREATE POLICY "Users can view active templates"
     )
   );
 
+
+
 -- ============================================================================
 -- DOCUMENTS_REGISTRY: Consolidate all policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Master admin full access to documents_registry" ON documents_registry;
+
+
 DROP POLICY IF EXISTS "Service role full access to documents_registry" ON documents_registry;
+
+
 DROP POLICY IF EXISTS "Admin and dispatcher can insert documents" ON documents_registry;
+
+
 DROP POLICY IF EXISTS "Admin and dispatcher can read all documents" ON documents_registry;
+
+
 DROP POLICY IF EXISTS "Admin and dispatcher can update documents" ON documents_registry;
+
+
 
 CREATE POLICY "Admin staff manage documents"
   ON documents_registry

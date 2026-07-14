@@ -47,9 +47,17 @@ BEGIN
     NOW()
   )
   ON CONFLICT (id) DO NOTHING;
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$;
+
+
 
 CREATE OR REPLACE FUNCTION public.handle_new_user_role()
 RETURNS trigger
@@ -62,12 +70,22 @@ BEGIN
     INSERT INTO public.user_roles (user_id, role, created_at, updated_at)
     VALUES (NEW.id, 'master_admin', NOW(), NOW())
     ON CONFLICT (user_id, role) DO NOTHING;
+
+
   END IF;
+
+
 
   INSERT INTO public.user_roles (user_id, role, created_at, updated_at)
   VALUES (NEW.id, 'customer', NOW(), NOW())
   ON CONFLICT (user_id, role) DO NOTHING;
 
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$;

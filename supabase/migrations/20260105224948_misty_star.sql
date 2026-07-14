@@ -42,13 +42,19 @@ CREATE TABLE IF NOT EXISTS stripe_customers (
   deleted_at timestamp with time zone default null
 );
 
+
+
 ALTER TABLE stripe_customers ENABLE ROW LEVEL SECURITY;
+
+
 
 CREATE POLICY "Users can view their own customer data"
     ON stripe_customers
     FOR SELECT
     TO authenticated
     USING (user_id = auth.uid() AND deleted_at IS NULL);
+
+
 
 CREATE TYPE stripe_subscription_status AS ENUM (
     'not_started',
@@ -61,6 +67,8 @@ CREATE TYPE stripe_subscription_status AS ENUM (
     'unpaid',
     'paused'
 );
+
+
 
 CREATE TABLE IF NOT EXISTS stripe_subscriptions (
   id bigint primary key generated always as identity,
@@ -78,7 +86,11 @@ CREATE TABLE IF NOT EXISTS stripe_subscriptions (
   deleted_at timestamp with time zone default null
 );
 
+
+
 ALTER TABLE stripe_subscriptions ENABLE ROW LEVEL SECURITY;
+
+
 
 CREATE POLICY "Users can view their own subscription data"
     ON stripe_subscriptions
@@ -93,11 +105,15 @@ CREATE POLICY "Users can view their own subscription data"
         AND deleted_at IS NULL
     );
 
+
+
 CREATE TYPE stripe_order_status AS ENUM (
     'pending',
     'completed',
     'canceled'
 );
+
+
 
 CREATE TABLE IF NOT EXISTS stripe_orders (
     id bigint primary key generated always as identity,
@@ -114,7 +130,11 @@ CREATE TABLE IF NOT EXISTS stripe_orders (
     deleted_at timestamp with time zone default null
 );
 
+
+
 ALTER TABLE stripe_orders ENABLE ROW LEVEL SECURITY;
+
+
 
 CREATE POLICY "Users can view their own order data"
     ON stripe_orders
@@ -128,6 +148,8 @@ CREATE POLICY "Users can view their own order data"
         )
         AND deleted_at IS NULL
     );
+
+
 
 -- View for user subscriptions
 CREATE VIEW stripe_user_subscriptions WITH (security_invoker = true) AS
@@ -147,7 +169,11 @@ WHERE c.user_id = auth.uid()
 AND c.deleted_at IS NULL
 AND s.deleted_at IS NULL;
 
+
+
 GRANT SELECT ON stripe_user_subscriptions TO authenticated;
+
+
 
 -- View for user orders
 CREATE VIEW stripe_user_orders WITH (security_invoker) AS

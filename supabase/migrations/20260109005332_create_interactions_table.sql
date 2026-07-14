@@ -48,21 +48,37 @@ CREATE TABLE IF NOT EXISTS interactions (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+
+
 -- Add constraint to ensure at least one of customer_id or contact_submission_id is provided
 -- (interaction must be linked to something)
 ALTER TABLE interactions
 ADD CONSTRAINT interactions_must_have_reference
 CHECK (customer_id IS NOT NULL OR contact_submission_id IS NOT NULL);
 
+
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_interactions_customer_id ON interactions(customer_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_interactions_contact_submission_id ON interactions(contact_submission_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_interactions_created_at ON interactions(created_at DESC);
+
+
 CREATE INDEX IF NOT EXISTS idx_interactions_created_by ON interactions(created_by);
+
+
 CREATE INDEX IF NOT EXISTS idx_interactions_type ON interactions(interaction_type);
+
+
 
 -- Enable Row Level Security
 ALTER TABLE interactions ENABLE ROW LEVEL SECURITY;
+
+
 
 -- RLS Policies
 
@@ -79,6 +95,8 @@ CREATE POLICY "Admins can read all interactions"
     )
   );
 
+
+
 CREATE POLICY "Crew can read all interactions"
   ON interactions
   FOR SELECT
@@ -91,11 +109,15 @@ CREATE POLICY "Crew can read all interactions"
     )
   );
 
+
+
 CREATE POLICY "Users can read own interactions"
   ON interactions
   FOR SELECT
   TO authenticated
   USING (created_by = auth.uid());
+
+
 
 -- INSERT: Admins and crew can create interactions
 CREATE POLICY "Admins can create interactions"
@@ -110,6 +132,8 @@ CREATE POLICY "Admins can create interactions"
     )
   );
 
+
+
 CREATE POLICY "Crew can create interactions"
   ON interactions
   FOR INSERT
@@ -121,6 +145,8 @@ CREATE POLICY "Crew can create interactions"
       AND user_roles.role = 'crew'
     )
   );
+
+
 
 -- UPDATE: Admins can update any interaction, crew can update their own
 CREATE POLICY "Admins can update any interaction"
@@ -141,6 +167,8 @@ CREATE POLICY "Admins can update any interaction"
       AND user_roles.role IN ('admin', 'master_admin')
     )
   );
+
+
 
 CREATE POLICY "Crew can update own interactions"
   ON interactions
@@ -163,6 +191,8 @@ CREATE POLICY "Crew can update own interactions"
     )
   );
 
+
+
 -- DELETE: Only admins can delete interactions
 CREATE POLICY "Admins can delete interactions"
   ON interactions
@@ -176,16 +206,28 @@ CREATE POLICY "Admins can delete interactions"
     )
   );
 
+
+
 -- Create trigger for updated_at
 CREATE OR REPLACE FUNCTION update_interactions_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$ LANGUAGE plpgsql;
 
+
+
 DROP TRIGGER IF EXISTS trigger_interactions_updated_at ON interactions;
+
+
 CREATE TRIGGER trigger_interactions_updated_at
   BEFORE UPDATE ON interactions
   FOR EACH ROW

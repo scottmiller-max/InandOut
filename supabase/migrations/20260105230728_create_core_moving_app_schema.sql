@@ -89,10 +89,18 @@ CREATE TABLE IF NOT EXISTS customers (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 
+
+
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create user_roles table
 CREATE TABLE IF NOT EXISTS user_roles (
@@ -106,10 +114,18 @@ CREATE TABLE IF NOT EXISTS user_roles (
   UNIQUE(user_id, role)
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role);
 
+
+
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create jobs table
 CREATE TABLE IF NOT EXISTS jobs (
@@ -155,12 +171,24 @@ CREATE TABLE IF NOT EXISTS jobs (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_jobs_customer_id ON jobs(customer_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+
+
 CREATE INDEX IF NOT EXISTS idx_jobs_move_date ON jobs(move_date);
+
+
 CREATE INDEX IF NOT EXISTS idx_jobs_job_number ON jobs(job_number);
 
+
+
 ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create moves table (customer-facing view of jobs)
 CREATE TABLE IF NOT EXISTS moves (
@@ -185,11 +213,21 @@ CREATE TABLE IF NOT EXISTS moves (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_moves_user_id ON moves(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_moves_job_id ON moves(job_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_moves_status ON moves(status);
 
+
+
 ALTER TABLE moves ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create messages table
 CREATE TABLE IF NOT EXISTS messages (
@@ -207,11 +245,21 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_messages_job_id ON messages(job_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_messages_move_id ON messages(move_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
 
+
+
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create events table
 CREATE TABLE IF NOT EXISTS events (
@@ -228,11 +276,21 @@ CREATE TABLE IF NOT EXISTS events (
   created_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_events_job_id ON events(job_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_events_move_id ON events(move_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_events_event_time ON events(event_time);
 
+
+
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create customer_photos table
 CREATE TABLE IF NOT EXISTS customer_photos (
@@ -250,11 +308,21 @@ CREATE TABLE IF NOT EXISTS customer_photos (
   created_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_customer_photos_customer_id ON customer_photos(customer_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_customer_photos_user_id ON customer_photos(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_customer_photos_job_id ON customer_photos(job_id);
 
+
+
 ALTER TABLE customer_photos ENABLE ROW LEVEL SECURITY;
+
+
 
 -- Create document_templates table
 CREATE TABLE IF NOT EXISTS document_templates (
@@ -276,16 +344,26 @@ CREATE TABLE IF NOT EXISTS document_templates (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 CREATE INDEX IF NOT EXISTS idx_document_templates_type ON document_templates(template_type);
+
+
 CREATE INDEX IF NOT EXISTS idx_document_templates_active ON document_templates(is_active);
 
+
+
 ALTER TABLE document_templates ENABLE ROW LEVEL SECURITY;
+
+
 
 -- RLS Policies for customers
 CREATE POLICY "Users can view their own customer record"
   ON customers FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
+
+
 
 CREATE POLICY "Admins can view all customers"
   ON customers FOR SELECT
@@ -298,6 +376,8 @@ CREATE POLICY "Admins can view all customers"
     )
   );
 
+
+
 CREATE POLICY "Admins can manage all customers"
   ON customers FOR ALL
   TO authenticated
@@ -309,11 +389,15 @@ CREATE POLICY "Admins can manage all customers"
     )
   );
 
+
+
 -- RLS Policies for user_roles
 CREATE POLICY "Users can view their own roles"
   ON user_roles FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
+
+
 
 CREATE POLICY "Admins can view all roles"
   ON user_roles FOR SELECT
@@ -326,6 +410,8 @@ CREATE POLICY "Admins can view all roles"
     )
   );
 
+
+
 CREATE POLICY "Master admins can manage roles"
   ON user_roles FOR ALL
   TO authenticated
@@ -336,6 +422,8 @@ CREATE POLICY "Master admins can manage roles"
       AND ur.role = 'master_admin'
     )
   );
+
+
 
 -- RLS Policies for jobs
 CREATE POLICY "Customers can view their jobs"
@@ -349,6 +437,8 @@ CREATE POLICY "Customers can view their jobs"
     )
   );
 
+
+
 CREATE POLICY "Admins can view all jobs"
   ON jobs FOR SELECT
   TO authenticated
@@ -359,6 +449,8 @@ CREATE POLICY "Admins can view all jobs"
       AND user_roles.role IN ('master_admin', 'admin', 'crew')
     )
   );
+
+
 
 CREATE POLICY "Admins can manage all jobs"
   ON jobs FOR ALL
@@ -371,11 +463,15 @@ CREATE POLICY "Admins can manage all jobs"
     )
   );
 
+
+
 -- RLS Policies for moves
 CREATE POLICY "Users can view their own moves"
   ON moves FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
+
+
 
 CREATE POLICY "Admins can view all moves"
   ON moves FOR SELECT
@@ -388,6 +484,8 @@ CREATE POLICY "Admins can view all moves"
     )
   );
 
+
+
 CREATE POLICY "Admins can manage all moves"
   ON moves FOR ALL
   TO authenticated
@@ -398,6 +496,8 @@ CREATE POLICY "Admins can manage all moves"
       AND user_roles.role IN ('master_admin', 'admin')
     )
   );
+
+
 
 -- RLS Policies for messages
 CREATE POLICY "Users can view messages for their jobs"
@@ -417,6 +517,8 @@ CREATE POLICY "Users can view messages for their jobs"
       AND c.user_id = auth.uid()
     )
   );
+
+
 
 CREATE POLICY "Users can send messages to their jobs"
   ON messages FOR INSERT
@@ -439,6 +541,8 @@ CREATE POLICY "Users can send messages to their jobs"
     )
   );
 
+
+
 CREATE POLICY "Admins can manage all messages"
   ON messages FOR ALL
   TO authenticated
@@ -449,6 +553,8 @@ CREATE POLICY "Admins can manage all messages"
       AND user_roles.role IN ('master_admin', 'admin', 'crew')
     )
   );
+
+
 
 -- RLS Policies for events
 CREATE POLICY "Users can view events for their jobs"
@@ -469,6 +575,8 @@ CREATE POLICY "Users can view events for their jobs"
     )
   );
 
+
+
 CREATE POLICY "Admins can manage all events"
   ON events FOR ALL
   TO authenticated
@@ -480,16 +588,22 @@ CREATE POLICY "Admins can manage all events"
     )
   );
 
+
+
 -- RLS Policies for customer_photos
 CREATE POLICY "Users can view their own photos"
   ON customer_photos FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
+
+
 CREATE POLICY "Users can upload their own photos"
   ON customer_photos FOR INSERT
   TO authenticated
   WITH CHECK (user_id = auth.uid());
+
+
 
 CREATE POLICY "Admins can manage all photos"
   ON customer_photos FOR ALL
@@ -502,11 +616,15 @@ CREATE POLICY "Admins can manage all photos"
     )
   );
 
+
+
 -- RLS Policies for document_templates (read-only for all authenticated)
 CREATE POLICY "All authenticated users can view active templates"
   ON document_templates FOR SELECT
   TO authenticated
   USING (is_active = true);
+
+
 
 CREATE POLICY "Admins can manage templates"
   ON document_templates FOR ALL
@@ -519,6 +637,8 @@ CREATE POLICY "Admins can manage templates"
     )
   );
 
+
+
 -- Function to auto-assign master_admin role
 CREATE OR REPLACE FUNCTION assign_master_admin_role()
 RETURNS TRIGGER AS $$
@@ -527,91 +647,161 @@ BEGIN
     INSERT INTO user_roles (user_id, role, assigned_by)
     VALUES (NEW.id, 'master_admin', NEW.id)
     ON CONFLICT (user_id, role) DO NOTHING;
+
+
   ELSE
     INSERT INTO user_roles (user_id, role)
     VALUES (NEW.id, 'customer')
     ON CONFLICT (user_id, role) DO NOTHING;
+
+
   END IF;
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 
 -- Trigger to auto-assign roles on user creation
 DROP TRIGGER IF EXISTS on_auth_user_created_assign_role ON auth.users;
+
+
 CREATE TRIGGER on_auth_user_created_assign_role
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION assign_master_admin_role();
+
+
 
 -- Function to generate job numbers
 CREATE OR REPLACE FUNCTION generate_job_number()
 RETURNS TRIGGER AS $$
 DECLARE
   date_part text;
+
+
   seq_num integer;
+
+
   new_job_number text;
+
+
 BEGIN
   IF NEW.job_number IS NULL THEN
     date_part := to_char(COALESCE(NEW.move_date, CURRENT_DATE), 'YYMMDD');
+
+
     SELECT COALESCE(MAX(
       CAST(SUBSTRING(job_number FROM 'JOB-' || date_part || '-([0-9]+)') AS INTEGER)
     ), 0) + 1
     INTO seq_num
     FROM jobs
     WHERE job_number LIKE 'JOB-' || date_part || '-%';
+
+
     
     new_job_number := 'JOB-' || date_part || '-' || LPAD(seq_num::text, 3, '0');
+
+
     NEW.job_number := new_job_number;
+
+
   END IF;
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$ LANGUAGE plpgsql;
 
+
+
 DROP TRIGGER IF EXISTS generate_job_number_trigger ON jobs;
+
+
 CREATE TRIGGER generate_job_number_trigger
   BEFORE INSERT ON jobs
   FOR EACH ROW
   EXECUTE FUNCTION generate_job_number();
+
+
 
 -- Function to update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$ LANGUAGE plpgsql;
+
+
 
 -- Apply update triggers
 DROP TRIGGER IF EXISTS update_customers_updated_at ON customers;
+
+
 CREATE TRIGGER update_customers_updated_at
   BEFORE UPDATE ON customers
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 DROP TRIGGER IF EXISTS update_user_roles_updated_at ON user_roles;
+
+
 CREATE TRIGGER update_user_roles_updated_at
   BEFORE UPDATE ON user_roles
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 DROP TRIGGER IF EXISTS update_jobs_updated_at ON jobs;
+
+
 CREATE TRIGGER update_jobs_updated_at
   BEFORE UPDATE ON jobs
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 DROP TRIGGER IF EXISTS update_moves_updated_at ON moves;
+
+
 CREATE TRIGGER update_moves_updated_at
   BEFORE UPDATE ON moves
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 DROP TRIGGER IF EXISTS update_document_templates_updated_at ON document_templates;
+
+
 CREATE TRIGGER update_document_templates_updated_at
   BEFORE UPDATE ON document_templates
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+
 
 -- Insert default document templates
 INSERT INTO document_templates (template_name, template_type, file_path, version, is_active)

@@ -38,8 +38,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.contact_submissions 
     ADD COLUMN customer_id uuid REFERENCES public.customers(id) ON DELETE SET NULL;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add consent column
 DO $$
@@ -52,8 +58,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.contact_submissions 
     ADD COLUMN consent boolean NOT NULL DEFAULT false;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add consent_timestamp column
 DO $$
@@ -66,8 +78,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.contact_submissions 
     ADD COLUMN consent_timestamp timestamptz;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Update status CHECK constraint to include 'new'
 DO $$
@@ -79,13 +97,21 @@ BEGIN
     AND table_name = 'contact_submissions'
   ) THEN
     ALTER TABLE public.contact_submissions DROP CONSTRAINT contact_submissions_status_check;
+
+
   END IF;
+
+
   
   -- Add updated constraint with 'new' value
   ALTER TABLE public.contact_submissions 
   ADD CONSTRAINT contact_submissions_status_check 
   CHECK (status IN ('new', 'pending', 'read', 'responded', 'archived'));
+
+
 END $$;
+
+
 
 -- Update source CHECK constraint to include 'website'
 DO $$
@@ -97,13 +123,21 @@ BEGIN
     AND table_name = 'contact_submissions'
   ) THEN
     ALTER TABLE public.contact_submissions DROP CONSTRAINT contact_submissions_source_check;
+
+
   END IF;
+
+
   
   -- Add updated constraint with 'website' value
   ALTER TABLE public.contact_submissions 
   ADD CONSTRAINT contact_submissions_source_check 
   CHECK (source IN ('landing_page', 'app', 'website', 'other'));
+
+
 END $$;
+
+
 
 -- Add index on customer_id for join performance
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_customer_id 

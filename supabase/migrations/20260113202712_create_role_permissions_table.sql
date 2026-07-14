@@ -29,11 +29,17 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   UNIQUE(role, permission)
 );
 
+
+
 -- Create index for faster permission lookups
 CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role);
 
+
+
 -- Enable RLS
 ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
+
+
 
 -- RLS Policies for role_permissions
 
@@ -44,6 +50,8 @@ CREATE POLICY "Authenticated users can read permissions"
   TO authenticated
   USING (true);
 
+
+
 -- Only service role can modify (edge functions use service role)
 CREATE POLICY "Service role can manage permissions"
   ON role_permissions
@@ -51,12 +59,18 @@ CREATE POLICY "Service role can manage permissions"
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+
+
 -- Drop the existing constraint on user_roles
 ALTER TABLE user_roles DROP CONSTRAINT IF EXISTS valid_role;
+
+
 
 -- Add new constraint with all roles including dispatcher and family_partner
 ALTER TABLE user_roles ADD CONSTRAINT valid_role 
   CHECK (role IN ('master_admin', 'admin', 'dispatcher', 'family_partner', 'crew', 'customer'));
+
+
 
 -- Insert default role permissions
 INSERT INTO role_permissions (role, permission) VALUES
@@ -158,6 +172,8 @@ INSERT INTO role_permissions (role, permission) VALUES
   ('system', 'customers:read')
 ON CONFLICT (role, permission) DO NOTHING;
 
+
+
 -- Create function to get role hierarchy level
 CREATE OR REPLACE FUNCTION get_role_hierarchy_level(user_role text)
 RETURNS integer
@@ -174,8 +190,14 @@ BEGIN
     WHEN 'customer' THEN 1
     ELSE 0
   END;
+
+
 END;
+
+
 $$;
+
+
 
 -- Create function to check if user can manage another user's role
 CREATE OR REPLACE FUNCTION can_manage_role(manager_user_id uuid, target_role text)
@@ -185,8 +207,14 @@ SECURITY DEFINER
 AS $$
 DECLARE
   manager_role text;
+
+
   manager_level integer;
+
+
   target_level integer;
+
+
 BEGIN
   -- Get manager's highest role
   SELECT role INTO manager_role
@@ -194,21 +222,41 @@ BEGIN
   WHERE user_id = manager_user_id
   LIMIT 1;
 
+
+
   IF manager_role IS NULL THEN
     RETURN false;
+
+
   END IF;
 
+
+
   manager_level := get_role_hierarchy_level(manager_role);
+
+
   target_level := get_role_hierarchy_level(target_role);
+
+
 
   -- Master admin can manage all, others can only manage roles below their level
   IF manager_role = 'master_admin' THEN
     RETURN true;
+
+
   END IF;
 
+
+
   RETURN manager_level > target_level;
+
+
 END;
+
+
 $$;
+
+
 
 -- Create function to check if user has specific role
 CREATE OR REPLACE FUNCTION user_has_role(user_uuid uuid, role_name text)
@@ -223,11 +271,19 @@ BEGIN
     WHERE ur.user_id = user_uuid
     AND ur.role = role_name
   );
+
+
 END;
+
+
 $$;
+
+
 
 -- Update RLS policies to include dispatcher
 DROP POLICY IF EXISTS "Admins can read all roles" ON user_roles;
+
+
 CREATE POLICY "Admins and dispatchers can read all roles"
   ON user_roles
   FOR SELECT
@@ -239,6 +295,8 @@ CREATE POLICY "Admins and dispatchers can read all roles"
       AND ur.role IN ('master_admin', 'admin', 'dispatcher')
     )
   );
+
+
 
 -- Add comment explaining the permission system
 COMMENT ON TABLE role_permissions IS 'Maps roles to specific permissions. Permissions follow the pattern resource:action (e.g., crm:read, jobs:assign). Edge functions check these permissions before allowing operations. System role is for Riley AI and not assigned to users.';

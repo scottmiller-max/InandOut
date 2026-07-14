@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS job_notifications (
   updated_at timestamptz DEFAULT now() NOT NULL
 );
 
+
+
 -- Create user_notification_preferences table
 CREATE TABLE IF NOT EXISTS user_notification_preferences (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -87,6 +89,8 @@ CREATE TABLE IF NOT EXISTS user_notification_preferences (
   created_at timestamptz DEFAULT now() NOT NULL,
   updated_at timestamptz DEFAULT now() NOT NULL
 );
+
+
 
 -- Create email_throttle_log table
 CREATE TABLE IF NOT EXISTS email_throttle_log (
@@ -102,23 +106,39 @@ CREATE TABLE IF NOT EXISTS email_throttle_log (
   UNIQUE(user_id, job_id, notification_type)
 );
 
+
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_job_notifications_job_user_type 
   ON job_notifications(job_id, user_id, notification_type);
 
+
+
 CREATE INDEX IF NOT EXISTS idx_job_notifications_created_at 
   ON job_notifications(created_at DESC);
+
+
 
 CREATE INDEX IF NOT EXISTS idx_email_throttle_log_lookup 
   ON email_throttle_log(user_id, job_id, notification_type);
 
+
+
 CREATE INDEX IF NOT EXISTS idx_email_throttle_log_last_sent 
   ON email_throttle_log(last_sent_at);
 
+
+
 -- Enable Row Level Security
 ALTER TABLE job_notifications ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE user_notification_preferences ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE email_throttle_log ENABLE ROW LEVEL SECURITY;
+
+
 
 -- RLS Policies for job_notifications
 
@@ -128,6 +148,8 @@ CREATE POLICY "Users can view own notifications"
   FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
+
+
 
 -- Admins can view all notifications
 CREATE POLICY "Admins can view all notifications"
@@ -142,12 +164,16 @@ CREATE POLICY "Admins can view all notifications"
     )
   );
 
+
+
 -- Service role can insert notifications (via edge functions)
 CREATE POLICY "Service can insert notifications"
   ON job_notifications
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
+
+
 
 -- Service can update notification status
 CREATE POLICY "Service can update notification status"
@@ -156,6 +182,8 @@ CREATE POLICY "Service can update notification status"
   TO authenticated
   USING (true)
   WITH CHECK (true);
+
+
 
 -- RLS Policies for user_notification_preferences
 
@@ -166,12 +194,16 @@ CREATE POLICY "Users can view own preferences"
   TO authenticated
   USING (auth.uid() = user_id);
 
+
+
 -- Users can insert their own preferences
 CREATE POLICY "Users can insert own preferences"
   ON user_notification_preferences
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
+
+
 
 -- Users can update their own preferences
 CREATE POLICY "Users can update own preferences"
@@ -180,6 +212,8 @@ CREATE POLICY "Users can update own preferences"
   TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+
 
 -- Admins can view all preferences
 CREATE POLICY "Admins can view all preferences"
@@ -194,6 +228,8 @@ CREATE POLICY "Admins can view all preferences"
     )
   );
 
+
+
 -- RLS Policies for email_throttle_log
 
 -- Users can view their own throttle logs
@@ -202,6 +238,8 @@ CREATE POLICY "Users can view own throttle logs"
   FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
+
+
 
 -- Admins can view all throttle logs
 CREATE POLICY "Admins can view all throttle logs"
@@ -216,6 +254,8 @@ CREATE POLICY "Admins can view all throttle logs"
     )
   );
 
+
+
 -- Service can insert and update throttle logs
 CREATE POLICY "Service can manage throttle logs"
   ON email_throttle_log
@@ -224,6 +264,8 @@ CREATE POLICY "Service can manage throttle logs"
   USING (true)
   WITH CHECK (true);
 
+
+
 -- Create function to automatically create default preferences for new users
 CREATE OR REPLACE FUNCTION create_default_notification_preferences()
 RETURNS TRIGGER AS $$
@@ -231,25 +273,45 @@ BEGIN
   INSERT INTO user_notification_preferences (user_id)
   VALUES (NEW.id)
   ON CONFLICT (user_id) DO NOTHING;
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 
 -- Trigger to create default preferences on user signup
 DROP TRIGGER IF EXISTS on_auth_user_created_preferences ON auth.users;
+
+
 CREATE TRIGGER on_auth_user_created_preferences
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION create_default_notification_preferences();
+
+
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
+
+
   RETURN NEW;
+
+
 END;
+
+
 $$ LANGUAGE plpgsql;
+
+
 
 -- Triggers for updated_at
 CREATE TRIGGER update_job_notifications_updated_at
@@ -257,10 +319,14 @@ CREATE TRIGGER update_job_notifications_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 CREATE TRIGGER update_user_notification_preferences_updated_at
   BEFORE UPDATE ON user_notification_preferences
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+
 
 CREATE TRIGGER update_email_throttle_log_updated_at
   BEFORE UPDATE ON email_throttle_log
