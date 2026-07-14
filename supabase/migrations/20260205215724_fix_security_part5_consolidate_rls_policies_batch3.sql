@@ -21,7 +21,11 @@
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Dispatchers and admins can read draft jobs" ON draft_jobs;
+
+
 DROP POLICY IF EXISTS "Service role can manage draft jobs" ON draft_jobs;
+
+
 
 CREATE POLICY "Staff can read draft jobs"
   ON draft_jobs
@@ -35,8 +39,12 @@ CREATE POLICY "Staff can read draft jobs"
     )
   );
 
+
+
 -- DRAFT_JOBS: Consolidate UPDATE policies
 DROP POLICY IF EXISTS "Dispatchers and admins can update draft jobs" ON draft_jobs;
+
+
 
 CREATE POLICY "Staff can update draft jobs"
   ON draft_jobs
@@ -57,13 +65,21 @@ CREATE POLICY "Staff can update draft jobs"
     )
   );
 
+
+
 -- ============================================================================
 -- EMAIL_THROTTLE_LOG: Consolidate SELECT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can view all throttle logs" ON email_throttle_log;
+
+
 DROP POLICY IF EXISTS "Service can manage throttle logs" ON email_throttle_log;
+
+
 DROP POLICY IF EXISTS "Users can view own throttle logs" ON email_throttle_log;
+
+
 
 CREATE POLICY "Users can view throttle logs"
   ON email_throttle_log
@@ -79,12 +95,18 @@ CREATE POLICY "Users can view throttle logs"
     )
   );
 
+
+
 -- ============================================================================
 -- EVENTS: Consolidate SELECT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage all events" ON events;
+
+
 DROP POLICY IF EXISTS "Users can view events for their jobs" ON events;
+
+
 
 CREATE POLICY "Users can view events"
   ON events
@@ -106,13 +128,21 @@ CREATE POLICY "Users can view events"
     )
   );
 
+
+
 -- ============================================================================
 -- INTERACTIONS: Consolidate INSERT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can create interactions" ON interactions;
+
+
 DROP POLICY IF EXISTS "Crew can create interactions" ON interactions;
+
+
 DROP POLICY IF EXISTS "Staff can insert interactions" ON interactions;
+
+
 
 CREATE POLICY "Staff can create interactions"
   ON interactions
@@ -128,11 +158,21 @@ CREATE POLICY "Staff can create interactions"
     )
   );
 
+
+
 -- INTERACTIONS: Consolidate SELECT policies
 DROP POLICY IF EXISTS "Admins can read all interactions" ON interactions;
+
+
 DROP POLICY IF EXISTS "Crew can read interactions for assigned jobs" ON interactions;
+
+
 DROP POLICY IF EXISTS "Staff can read interactions" ON interactions;
+
+
 DROP POLICY IF EXISTS "Users can read own interactions" ON interactions;
+
+
 
 CREATE POLICY "Users can read interactions"
   ON interactions
@@ -150,9 +190,15 @@ CREATE POLICY "Users can read interactions"
     )
   );
 
+
+
 -- INTERACTIONS: Consolidate UPDATE policies
 DROP POLICY IF EXISTS "Admins can update any interaction" ON interactions;
+
+
 DROP POLICY IF EXISTS "Crew can update own interactions" ON interactions;
+
+
 
 CREATE POLICY "Staff can update interactions"
   ON interactions

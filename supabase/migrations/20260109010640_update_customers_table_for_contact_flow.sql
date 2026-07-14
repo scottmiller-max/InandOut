@@ -40,7 +40,11 @@ BEGIN
     AND column_name = 'full_name'
   ) THEN
     ALTER TABLE public.customers ADD COLUMN full_name text NOT NULL DEFAULT '';
+
+
   END IF;
+
+
 
   -- Add email_consent column if it doesn't exist
   IF NOT EXISTS (
@@ -50,7 +54,11 @@ BEGIN
     AND column_name = 'email_consent'
   ) THEN
     ALTER TABLE public.customers ADD COLUMN email_consent boolean NOT NULL DEFAULT true;
+
+
   END IF;
+
+
 
   -- Add sms_consent column if it doesn't exist
   IF NOT EXISTS (
@@ -60,7 +68,11 @@ BEGIN
     AND column_name = 'sms_consent'
   ) THEN
     ALTER TABLE public.customers ADD COLUMN sms_consent boolean NOT NULL DEFAULT false;
+
+
   END IF;
+
+
 
   -- Add last_interaction_at column if it doesn't exist
   IF NOT EXISTS (
@@ -70,8 +82,14 @@ BEGIN
     AND column_name = 'last_interaction_at'
   ) THEN
     ALTER TABLE public.customers ADD COLUMN last_interaction_at timestamptz;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Migrate existing data from first_name + last_name to full_name
 UPDATE public.customers 
@@ -83,6 +101,8 @@ SET full_name = TRIM(CONCAT(
 ))
 WHERE full_name = '' OR full_name IS NULL;
 
+
+
 -- Drop first_name and last_name columns after migration
 DO $$
 BEGIN
@@ -93,7 +113,11 @@ BEGIN
     AND column_name = 'first_name'
   ) THEN
     ALTER TABLE public.customers DROP COLUMN first_name;
+
+
   END IF;
+
+
 
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
@@ -102,8 +126,14 @@ BEGIN
     AND column_name = 'last_name'
   ) THEN
     ALTER TABLE public.customers DROP COLUMN last_name;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add index on last_interaction_at for performance
 CREATE INDEX IF NOT EXISTS idx_customers_last_interaction_at 

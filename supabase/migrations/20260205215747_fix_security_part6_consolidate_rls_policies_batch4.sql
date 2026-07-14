@@ -21,7 +21,11 @@
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can view all notifications" ON job_notifications;
+
+
 DROP POLICY IF EXISTS "Users can view own notifications" ON job_notifications;
+
+
 
 CREATE POLICY "Users can view notifications"
   ON job_notifications
@@ -37,14 +41,24 @@ CREATE POLICY "Users can view notifications"
     )
   );
 
+
+
 -- ============================================================================
 -- JOBS: Consolidate SELECT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage all jobs" ON jobs;
+
+
 DROP POLICY IF EXISTS "Admins can view all jobs" ON jobs;
+
+
 DROP POLICY IF EXISTS "Crew can view assigned jobs" ON jobs;
+
+
 DROP POLICY IF EXISTS "Customers can view their jobs" ON jobs;
+
+
 
 CREATE POLICY "Users can view jobs"
   ON jobs
@@ -60,12 +74,18 @@ CREATE POLICY "Users can view jobs"
     )
   );
 
+
+
 -- ============================================================================
 -- MESSAGES: Consolidate INSERT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage all messages" ON messages;
+
+
 DROP POLICY IF EXISTS "Users can send messages to their jobs" ON messages;
+
+
 
 CREATE POLICY "Users can send messages"
   ON messages
@@ -88,8 +108,12 @@ CREATE POLICY "Users can send messages"
     )
   );
 
+
+
 -- MESSAGES: Consolidate SELECT policies
 DROP POLICY IF EXISTS "Users can view messages for their jobs" ON messages;
+
+
 
 CREATE POLICY "Users can view messages"
   ON messages
@@ -111,13 +135,21 @@ CREATE POLICY "Users can view messages"
     )
   );
 
+
+
 -- ============================================================================
 -- MOVES: Consolidate SELECT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage all moves" ON moves;
+
+
 DROP POLICY IF EXISTS "Admins can view all moves" ON moves;
+
+
 DROP POLICY IF EXISTS "Users can view their own moves" ON moves;
+
+
 
 CREATE POLICY "Users can view moves"
   ON moves

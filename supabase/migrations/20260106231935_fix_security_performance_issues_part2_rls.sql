@@ -16,19 +16,31 @@
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view own settings" ON public.project_settings;
+
+
 DROP POLICY IF EXISTS "Users can insert own settings" ON public.project_settings;
+
+
 DROP POLICY IF EXISTS "Users can update own settings" ON public.project_settings;
+
+
 DROP POLICY IF EXISTS "Users can delete own settings" ON public.project_settings;
+
+
 
 CREATE POLICY "Users can view own settings"
   ON public.project_settings FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can insert own settings"
   ON public.project_settings FOR INSERT
   TO authenticated
   WITH CHECK (user_id = (select auth.uid()));
+
+
 
 CREATE POLICY "Users can update own settings"
   ON public.project_settings FOR UPDATE
@@ -36,29 +48,45 @@ CREATE POLICY "Users can update own settings"
   USING (user_id = (select auth.uid()))
   WITH CHECK (user_id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can delete own settings"
   ON public.project_settings FOR DELETE
   TO authenticated
   USING (user_id = (select auth.uid()));
+
+
 
 -- =====================================================
 -- STEP 2: Fix RLS policies - project_files table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view own files" ON public.project_files;
+
+
 DROP POLICY IF EXISTS "Users can insert own files" ON public.project_files;
+
+
 DROP POLICY IF EXISTS "Users can update own files" ON public.project_files;
+
+
 DROP POLICY IF EXISTS "Users can delete own files" ON public.project_files;
+
+
 
 CREATE POLICY "Users can view own files"
   ON public.project_files FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can insert own files"
   ON public.project_files FOR INSERT
   TO authenticated
   WITH CHECK (user_id = (select auth.uid()));
+
+
 
 CREATE POLICY "Users can update own files"
   ON public.project_files FOR UPDATE
@@ -66,22 +94,32 @@ CREATE POLICY "Users can update own files"
   USING (user_id = (select auth.uid()))
   WITH CHECK (user_id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can delete own files"
   ON public.project_files FOR DELETE
   TO authenticated
   USING (user_id = (select auth.uid()));
+
+
 
 -- =====================================================
 -- STEP 3: Fix RLS policies - stripe tables
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view their own customer data" ON public.stripe_customers;
+
+
 CREATE POLICY "Users can view their own customer data"
   ON public.stripe_customers FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
 
+
+
 DROP POLICY IF EXISTS "Users can view their own subscription data" ON public.stripe_subscriptions;
+
+
 CREATE POLICY "Users can view their own subscription data"
   ON public.stripe_subscriptions FOR SELECT
   TO authenticated
@@ -92,7 +130,11 @@ CREATE POLICY "Users can view their own subscription data"
     )
   );
 
+
+
 DROP POLICY IF EXISTS "Users can view their own order data" ON public.stripe_orders;
+
+
 CREATE POLICY "Users can view their own order data"
   ON public.stripe_orders FOR SELECT
   TO authenticated
@@ -103,20 +145,34 @@ CREATE POLICY "Users can view their own order data"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 4: Fix RLS policies - user_roles table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
+
+
 DROP POLICY IF EXISTS "Admins can view all roles" ON public.user_roles;
+
+
 DROP POLICY IF EXISTS "Master admins can manage roles" ON public.user_roles;
+
+
 DROP POLICY IF EXISTS "Users can insert own role" ON public.user_roles;
+
+
 DROP POLICY IF EXISTS "Users can insert own customer role" ON public.user_roles;
+
+
 
 CREATE POLICY "Users can view their own roles"
   ON public.user_roles FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
+
+
 
 CREATE POLICY "Admins can view all roles"
   ON public.user_roles FOR SELECT
@@ -128,6 +184,8 @@ CREATE POLICY "Admins can view all roles"
       AND ur.role IN ('admin', 'master_admin')
     )
   );
+
+
 
 CREATE POLICY "Master admins can manage roles"
   ON public.user_roles
@@ -147,28 +205,42 @@ CREATE POLICY "Master admins can manage roles"
     )
   );
 
+
+
 CREATE POLICY "Users can insert own role"
   ON public.user_roles FOR INSERT
   TO authenticated
   WITH CHECK (user_id = (select auth.uid()) AND role = 'customer');
+
+
 
 CREATE POLICY "Users can insert own customer role"
   ON public.user_roles FOR INSERT
   TO authenticated
   WITH CHECK (user_id = (select auth.uid()) AND role = 'customer');
 
+
+
 -- =====================================================
 -- STEP 5: Fix RLS policies - customers table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view their own customer record" ON public.customers;
+
+
 DROP POLICY IF EXISTS "Admins can view all customers" ON public.customers;
+
+
 DROP POLICY IF EXISTS "Admins can manage all customers" ON public.customers;
+
+
 
 CREATE POLICY "Users can view their own customer record"
   ON public.customers FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
+
+
 
 CREATE POLICY "Admins can view all customers"
   ON public.customers FOR SELECT
@@ -180,6 +252,8 @@ CREATE POLICY "Admins can view all customers"
       AND ur.role IN ('admin', 'master_admin')
     )
   );
+
+
 
 CREATE POLICY "Admins can manage all customers"
   ON public.customers
@@ -199,13 +273,21 @@ CREATE POLICY "Admins can manage all customers"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 6: Fix RLS policies - jobs table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Customers can view their jobs" ON public.jobs;
+
+
 DROP POLICY IF EXISTS "Admins can view all jobs" ON public.jobs;
+
+
 DROP POLICY IF EXISTS "Admins can manage all jobs" ON public.jobs;
+
+
 
 CREATE POLICY "Customers can view their jobs"
   ON public.jobs FOR SELECT
@@ -217,6 +299,8 @@ CREATE POLICY "Customers can view their jobs"
     )
   );
 
+
+
 CREATE POLICY "Admins can view all jobs"
   ON public.jobs FOR SELECT
   TO authenticated
@@ -227,6 +311,8 @@ CREATE POLICY "Admins can view all jobs"
       AND ur.role IN ('admin', 'master_admin')
     )
   );
+
+
 
 CREATE POLICY "Admins can manage all jobs"
   ON public.jobs
@@ -246,18 +332,28 @@ CREATE POLICY "Admins can manage all jobs"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 7: Fix RLS policies - moves table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view their own moves" ON public.moves;
+
+
 DROP POLICY IF EXISTS "Admins can view all moves" ON public.moves;
+
+
 DROP POLICY IF EXISTS "Admins can manage all moves" ON public.moves;
+
+
 
 CREATE POLICY "Users can view their own moves"
   ON public.moves FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
+
+
 
 CREATE POLICY "Admins can view all moves"
   ON public.moves FOR SELECT
@@ -269,6 +365,8 @@ CREATE POLICY "Admins can view all moves"
       AND ur.role IN ('admin', 'master_admin')
     )
   );
+
+
 
 CREATE POLICY "Admins can manage all moves"
   ON public.moves
@@ -288,13 +386,21 @@ CREATE POLICY "Admins can manage all moves"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 8: Fix RLS policies - messages table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view messages for their jobs" ON public.messages;
+
+
 DROP POLICY IF EXISTS "Users can send messages to their jobs" ON public.messages;
+
+
 DROP POLICY IF EXISTS "Admins can manage all messages" ON public.messages;
+
+
 
 CREATE POLICY "Users can view messages for their jobs"
   ON public.messages FOR SELECT
@@ -307,6 +413,8 @@ CREATE POLICY "Users can view messages for their jobs"
     )
   );
 
+
+
 CREATE POLICY "Users can send messages to their jobs"
   ON public.messages FOR INSERT
   TO authenticated
@@ -318,6 +426,8 @@ CREATE POLICY "Users can send messages to their jobs"
       WHERE c.user_id = (select auth.uid())
     )
   );
+
+
 
 CREATE POLICY "Admins can manage all messages"
   ON public.messages
@@ -337,12 +447,18 @@ CREATE POLICY "Admins can manage all messages"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 9: Fix RLS policies - events table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view events for their jobs" ON public.events;
+
+
 DROP POLICY IF EXISTS "Admins can manage all events" ON public.events;
+
+
 
 CREATE POLICY "Users can view events for their jobs"
   ON public.events FOR SELECT
@@ -354,6 +470,8 @@ CREATE POLICY "Users can view events for their jobs"
       WHERE c.user_id = (select auth.uid())
     )
   );
+
+
 
 CREATE POLICY "Admins can manage all events"
   ON public.events
@@ -373,23 +491,35 @@ CREATE POLICY "Admins can manage all events"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 10: Fix RLS policies - customer_photos table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view their own photos" ON public.customer_photos;
+
+
 DROP POLICY IF EXISTS "Users can upload their own photos" ON public.customer_photos;
+
+
 DROP POLICY IF EXISTS "Admins can manage all photos" ON public.customer_photos;
+
+
 
 CREATE POLICY "Users can view their own photos"
   ON public.customer_photos FOR SELECT
   TO authenticated
   USING (user_id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can upload their own photos"
   ON public.customer_photos FOR INSERT
   TO authenticated
   WITH CHECK (user_id = (select auth.uid()));
+
+
 
 CREATE POLICY "Admins can manage all photos"
   ON public.customer_photos
@@ -409,12 +539,18 @@ CREATE POLICY "Admins can manage all photos"
     )
   );
 
+
+
 -- =====================================================
 -- STEP 11: Fix RLS policies - document_templates table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Admins can manage templates" ON public.document_templates;
+
+
 DROP POLICY IF EXISTS "All authenticated users can view active templates" ON public.document_templates;
+
+
 
 CREATE POLICY "Admins can manage templates"
   ON public.document_templates
@@ -434,41 +570,63 @@ CREATE POLICY "Admins can manage templates"
     )
   );
 
+
+
 CREATE POLICY "All authenticated users can view active templates"
   ON public.document_templates FOR SELECT
   TO authenticated
   USING (is_active = true);
+
+
 
 -- =====================================================
 -- STEP 12: Fix RLS policies - users table
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can read own data" ON public.users;
+
+
 DROP POLICY IF EXISTS "Users can insert own data" ON public.users;
+
+
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
+
+
 DROP POLICY IF EXISTS "Users can update own data" ON public.users;
+
+
 DROP POLICY IF EXISTS "Admins can view all users" ON public.users;
+
+
 
 CREATE POLICY "Users can read own data"
   ON public.users FOR SELECT
   TO authenticated
   USING (id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can insert own data"
   ON public.users FOR INSERT
   TO authenticated
   WITH CHECK (id = (select auth.uid()));
+
+
 
 CREATE POLICY "Users can insert own profile"
   ON public.users FOR INSERT
   TO authenticated
   WITH CHECK (id = (select auth.uid()));
 
+
+
 CREATE POLICY "Users can update own data"
   ON public.users FOR UPDATE
   TO authenticated
   USING (id = (select auth.uid()))
   WITH CHECK (id = (select auth.uid()));
+
+
 
 CREATE POLICY "Admins can view all users"
   ON public.users FOR SELECT

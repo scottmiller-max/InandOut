@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS staff_profiles (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 -- Create draft_jobs table for Riley AI suggestions
 CREATE TABLE IF NOT EXISTS draft_jobs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -67,6 +69,8 @@ CREATE TABLE IF NOT EXISTS draft_jobs (
   updated_at timestamptz DEFAULT now()
 );
 
+
+
 -- Create audit_log table
 CREATE TABLE IF NOT EXISTS audit_log (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -84,24 +88,52 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at timestamptz DEFAULT now()
 );
 
+
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_staff_profiles_user_id ON staff_profiles(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_staff_profiles_status ON staff_profiles(employment_status);
+
+
 CREATE INDEX IF NOT EXISTS idx_staff_profiles_availability ON staff_profiles(availability_status);
 
+
+
 CREATE INDEX IF NOT EXISTS idx_draft_jobs_customer_id ON draft_jobs(customer_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_draft_jobs_status ON draft_jobs(status);
+
+
 CREATE INDEX IF NOT EXISTS idx_draft_jobs_created_at ON draft_jobs(created_at DESC);
 
+
+
 CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id);
+
+
 CREATE INDEX IF NOT EXISTS idx_audit_log_action_type ON audit_log(action_type);
+
+
 CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
+
+
 CREATE INDEX IF NOT EXISTS idx_audit_log_category ON audit_log(action_category);
+
+
 
 -- Enable RLS
 ALTER TABLE staff_profiles ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE draft_jobs ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+
+
 
 -- RLS Policies for staff_profiles
 
@@ -111,6 +143,8 @@ CREATE POLICY "Staff can read own profile"
   FOR SELECT
   TO authenticated
   USING (user_id = (SELECT auth.uid()));
+
+
 
 -- Admins and dispatchers can read all staff profiles
 CREATE POLICY "Admins and dispatchers can read all staff profiles"
@@ -124,6 +158,8 @@ CREATE POLICY "Admins and dispatchers can read all staff profiles"
       AND ur.role IN ('master_admin', 'admin', 'dispatcher')
     )
   );
+
+
 
 -- Only admins can modify staff profiles
 CREATE POLICY "Admins can manage staff profiles"
@@ -145,12 +181,16 @@ CREATE POLICY "Admins can manage staff profiles"
     )
   );
 
+
+
 -- Service role can manage (for edge functions)
 CREATE POLICY "Service role can manage staff profiles"
   ON staff_profiles
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
+
 
 -- RLS Policies for draft_jobs
 
@@ -166,6 +206,8 @@ CREATE POLICY "Dispatchers and admins can read draft jobs"
       AND ur.role IN ('master_admin', 'admin', 'dispatcher')
     )
   );
+
+
 
 -- Dispatchers and admins can update draft jobs (approve/reject)
 CREATE POLICY "Dispatchers and admins can update draft jobs"
@@ -187,11 +229,15 @@ CREATE POLICY "Dispatchers and admins can update draft jobs"
     )
   );
 
+
+
 -- Service role can create draft jobs (Riley AI)
 CREATE POLICY "Service role can create draft jobs"
   ON draft_jobs
   FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
+
+
 
 -- Service role can manage draft jobs
 CREATE POLICY "Service role can manage draft jobs"
@@ -199,6 +245,8 @@ CREATE POLICY "Service role can manage draft jobs"
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
+
 
 -- RLS Policies for audit_log
 
@@ -215,11 +263,15 @@ CREATE POLICY "Master admin can read audit logs"
     )
   );
 
+
+
 -- Service role can insert audit logs
 CREATE POLICY "Service role can insert audit logs"
   ON audit_log
   FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
+
+
 
 -- Create triggers for updated_at
 CREATE TRIGGER update_staff_profiles_updated_at
@@ -227,12 +279,20 @@ CREATE TRIGGER update_staff_profiles_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 CREATE TRIGGER update_draft_jobs_updated_at
   BEFORE UPDATE ON draft_jobs
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+
+
 -- Add comments
 COMMENT ON TABLE staff_profiles IS 'Employment details for staff members (crew, dispatcher, admin). Links to user_roles for permission checking.';
+
+
 COMMENT ON TABLE draft_jobs IS 'Job suggestions created by Riley AI requiring dispatcher/admin approval before becoming actual jobs.';
+
+
 COMMENT ON TABLE audit_log IS 'System-wide audit trail for sensitive operations. Only accessible to master_admin for compliance and security reviews.';

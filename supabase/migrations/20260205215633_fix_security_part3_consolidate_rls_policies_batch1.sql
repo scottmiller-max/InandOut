@@ -22,8 +22,14 @@
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can read all ai summaries" ON ai_summaries;
+
+
 DROP POLICY IF EXISTS "Crew can read ai summaries for assigned jobs" ON ai_summaries;
+
+
 DROP POLICY IF EXISTS "Staff can read AI summaries" ON ai_summaries;
+
+
 
 CREATE POLICY "Staff can read AI summaries"
   ON ai_summaries
@@ -37,13 +43,21 @@ CREATE POLICY "Staff can read AI summaries"
     )
   );
 
+
+
 -- ============================================================================
 -- CALL_LOGS: Consolidate 3 SELECT policies into 1
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can read all call logs" ON call_logs;
+
+
 DROP POLICY IF EXISTS "Crew can read call logs for assigned jobs" ON call_logs;
+
+
 DROP POLICY IF EXISTS "Staff can read call logs" ON call_logs;
+
+
 
 CREATE POLICY "Staff can read call logs"
   ON call_logs
@@ -57,12 +71,18 @@ CREATE POLICY "Staff can read call logs"
     )
   );
 
+
+
 -- ============================================================================
 -- CONTACT_SUBMISSIONS: Consolidate 2 SELECT policies into 1
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can view all contact submissions" ON contact_submissions;
+
+
 DROP POLICY IF EXISTS "Staff can read contact submissions" ON contact_submissions;
+
+
 
 CREATE POLICY "Staff can read contact submissions"
   ON contact_submissions
@@ -76,12 +96,18 @@ CREATE POLICY "Staff can read contact submissions"
     )
   );
 
+
+
 -- ============================================================================
 -- CUSTOMER_PHOTOS: Consolidate INSERT policies
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage all photos" ON customer_photos;
+
+
 DROP POLICY IF EXISTS "Users can upload their own photos" ON customer_photos;
+
+
 
 CREATE POLICY "Users can upload photos"
   ON customer_photos
@@ -97,8 +123,12 @@ CREATE POLICY "Users can upload photos"
     )
   );
 
+
+
 -- CUSTOMER_PHOTOS: Consolidate SELECT policies
 DROP POLICY IF EXISTS "Users can view their own photos" ON customer_photos;
+
+
 
 CREATE POLICY "Users can view photos"
   ON customer_photos

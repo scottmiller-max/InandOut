@@ -49,8 +49,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.interactions 
     ADD COLUMN channel text;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add direction column
 DO $$
@@ -63,8 +69,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.interactions 
     ADD COLUMN direction text;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add content column
 DO $$
@@ -77,8 +89,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.interactions 
     ADD COLUMN content text;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add handled_by column
 DO $$
@@ -91,8 +109,14 @@ BEGIN
   ) THEN
     ALTER TABLE public.interactions 
     ADD COLUMN handled_by text;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add CHECK constraint for channel values
 DO $$
@@ -105,8 +129,14 @@ BEGIN
     ALTER TABLE public.interactions 
     ADD CONSTRAINT interactions_channel_check 
     CHECK (channel IS NULL OR channel IN ('web_form', 'phone', 'email', 'sms', 'in_person', 'chat'));
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add CHECK constraint for direction values
 DO $$
@@ -119,8 +149,14 @@ BEGIN
     ALTER TABLE public.interactions 
     ADD CONSTRAINT interactions_direction_check 
     CHECK (direction IS NULL OR direction IN ('inbound', 'outbound'));
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Add CHECK constraint for handled_by values
 DO $$
@@ -133,8 +169,14 @@ BEGIN
     ALTER TABLE public.interactions 
     ADD CONSTRAINT interactions_handled_by_check 
     CHECK (handled_by IS NULL OR handled_by IN ('human', 'ai', 'system'));
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Make created_by nullable for system-generated interactions
 -- First drop the NOT NULL constraint if it exists
@@ -149,18 +191,30 @@ BEGIN
     AND is_nullable = 'NO'
   ) THEN
     ALTER TABLE public.interactions ALTER COLUMN created_by DROP NOT NULL;
+
+
   END IF;
+
+
 END $$;
+
+
 
 -- Create indexes for new columns
 CREATE INDEX IF NOT EXISTS idx_interactions_channel 
 ON public.interactions(channel) WHERE channel IS NOT NULL;
 
+
+
 CREATE INDEX IF NOT EXISTS idx_interactions_direction 
 ON public.interactions(direction) WHERE direction IS NOT NULL;
 
+
+
 CREATE INDEX IF NOT EXISTS idx_interactions_handled_by 
 ON public.interactions(handled_by) WHERE handled_by IS NOT NULL;
+
+
 
 -- Update the must_have_reference constraint to also allow interactions with just customer_id
 -- (the original constraint required at least one of customer_id or contact_submission_id)
@@ -174,4 +228,6 @@ LANGUAGE sql
 IMMUTABLE
 AS $$
   SELECT '00000000-0000-0000-0000-000000000001'::uuid;
+
+
 $$;

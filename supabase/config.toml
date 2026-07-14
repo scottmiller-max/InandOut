@@ -7,24 +7,45 @@
 #                          authorization — our in-code requireRole/requireStaffOrSecret
 #                          checks are what actually protect these functions.
 #   verify_jwt = false  -> function is reachable without a Supabase JWT. Required for
-#                          third-party webhooks that can't send one. These MUST verify
-#                          their own shared secret in code (we do).
+#                          third-party webhooks and public/anonymous endpoints. These
+#                          MUST verify their own shared secret or gate the caller in
+#                          code (we do — see _shared/auth.ts).
 #
+# This file was synced to the LIVE deployed posture on 2026-07-14 (project
+# gdiudffqjhidreqzklbl). All 27 deployed functions are now represented here.
 # After changing this file, redeploy the affected functions.
 
-project_id = "REPLACE_WITH_YOUR_SUPABASE_PROJECT_REF"
+project_id = "gdiudffqjhidreqzklbl"
 
-# --- Public / machine endpoints: no Supabase JWT, own verification in code ---
+# --- verify_jwt = false: reachable without a Supabase JWT ---------------------
+# Each of these gates the caller itself (webhook secret, or in-code actor check).
+
 [functions.stripe-webhook]
 verify_jwt = false            # verifies Stripe signature in code
 
 [functions.vapi-webhook]
-verify_jwt = false            # now verifies VAPI_WEBHOOK_SECRET in code
+verify_jwt = false            # verifies VAPI_WEBHOOK_SECRET in code
 
 [functions.contact-submit]
-verify_jwt = false            # public website contact form (see note in APPLY.md)
+verify_jwt = false            # public website contact form
 
-# --- Everything else requires a JWT at the platform edge AND a role/secret in code ---
+[functions.riley-chat]
+verify_jwt = false            # public/anonymous-capable; gated in code by identifyActor
+                              # (staff = full, signed-in customer = own record, anon = general Q&A)
+
+[functions.riley-summary]
+verify_jwt = false            # NOTE: staff-only via requireRole(STAFF_ROLES) in code, but the
+                              # platform JWT gate is OFF in live. Relies solely on the in-code
+                              # role check. Confirm this is intended (vs. verify_jwt = true).
+
+[functions.riley-call-summary]
+verify_jwt = false            # gated in code by requireStaffOrSecret (Vapi callback path)
+
+# --- verify_jwt = true: a valid Supabase JWT is required at the platform edge --
+# Sensitive ones additionally enforce a role/secret in code (_shared/auth.ts).
+
+[functions.stripe-checkout]
+verify_jwt = true
 [functions.get-customer-profile]
 verify_jwt = true
 [functions.send-sms]
@@ -33,15 +54,9 @@ verify_jwt = true
 verify_jwt = true
 [functions.log-interaction]
 verify_jwt = true
-[functions.riley-chat]
-verify_jwt = true
-[functions.riley-summary]
-verify_jwt = true
-[functions.riley-call-summary]
-verify_jwt = true
-[functions.slack-notify]
-verify_jwt = true
 [functions.create-customer]
+verify_jwt = true
+[functions.promote-contact]
 verify_jwt = true
 [functions.search-customers]
 verify_jwt = true
@@ -51,7 +66,23 @@ verify_jwt = true
 verify_jwt = true
 [functions.approve-draft-job]
 verify_jwt = true
-[functions.promote-contact]
+[functions.slack-notify]
 verify_jwt = true
-[functions.stripe-checkout]
+[functions.send-quote]
+verify_jwt = true
+[functions.booking-confirmation]
+verify_jwt = true
+[functions.send-booking-confirmation-email]
+verify_jwt = true
+[functions.send-move-reminder-email]
+verify_jwt = true
+[functions.send-payment-receipt-email]
+verify_jwt = true
+[functions.send-review-request-email]
+verify_jwt = true
+[functions.send-service-agreement-email]
+verify_jwt = true
+[functions.send-membersclub-welcome-email]
+verify_jwt = true
+[functions.send-quote-email]
 verify_jwt = true
