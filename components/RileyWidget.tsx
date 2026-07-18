@@ -7,28 +7,34 @@ import { useAuth } from '@/hooks/useAuth';
 interface RileyWidgetProps {
   style?: any;
   contextData?: {
+    customerId?: string;
     moveId?: string;
     jobId?: string;
+    jobNumber?: string;
+    jobStatus?: string;
+    moveDate?: string;
+    fromAddress?: string;
+    toAddress?: string;
     fobData?: any;
     checklistData?: any;
   };
   size?: 'small' | 'medium' | 'large';
 }
 
-export const RileyWidget: React.FC<RileyWidgetProps> = ({ 
-  style, 
+export const RileyWidget: React.FC<RileyWidgetProps> = ({
+  style,
   contextData,
-  size = 'medium' 
+  size = 'medium',
 }) => {
   const { user } = useAuth();
   const [showRiley, setShowRiley] = useState(false);
 
-  const getUserRole = () => {
+  const getUserRole = (): 'customer' | 'admin' | 'family_partner' => {
     if (!user || !user.email) return 'customer';
 
-    // Role-based permissions
+    // Role-based hint only — the server decides real permissions from the auth token.
     const email = user.email.toLowerCase();
-    if (email.includes('@inoutmoving.com') || email.includes('@admin.com')) {
+    if (email.endsWith('@inandoutmovin.com') || email.includes('@admin.com')) {
       return 'admin';
     }
     if (email.includes('@partner.com') || email.includes('@family.com')) {
@@ -55,9 +61,10 @@ export const RileyWidget: React.FC<RileyWidgetProps> = ({
 
   return (
     <>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.rileyButton, getWidgetSize(), style]}
         onPress={() => setShowRiley(true)}
+        accessibilityLabel="Talk with Riley"
       >
         <Bot size={getIconSize()} color="#ffffff" />
       </TouchableOpacity>
@@ -77,7 +84,7 @@ export const RileyWidget: React.FC<RileyWidgetProps> = ({
 
 const styles = StyleSheet.create({
   rileyButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: '#00783C',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
