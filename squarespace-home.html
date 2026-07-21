@@ -1,0 +1,203 @@
+<!--
+  LIVE SOURCE — Home page (/) code block on inandoutmovin.com (Squarespace)
+  Pulled directly from the Squarespace page editor on 2026-07-20.
+  This is the actual embedded HTML/CSS/JS running in production right now.
+  Edit in Squarespace (Pages > Home > code block), then re-sync this file to
+  keep the repo accurate — Squarespace is the source of truth, not this file.
+
+  Note: uses Tailwind utility classes (loaded elsewhere on the site/via CDN),
+  unlike the About/Services/Contact pages which use hand-rolled scoped CSS.
+-->
+<div class="bg-gray-50 min-h-screen py-10 px-4">
+  <div class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-md">
+    <h1 class="text-2xl font-bold text-center mb-6">
+      Request Your Free Moving Quote
+    </h1>
+
+<input type="text" name="company" tabindex="-1" autocomplete="off" hidden>
+
+    <!-- Lead Form -->
+    <form id="leadForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Full Name</label>
+        <input type="text" name="full_name" class="w-full border rounded-lg p-3 mt-1" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Phone</label>
+        <input type="tel" name="phone" class="w-full border rounded-lg p-3 mt-1" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Email</label>
+        <input type="email" name="email" class="w-full border rounded-lg p-3 mt-1" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Move From (Address)</label>
+        <input type="text" name="address" class="w-full border rounded-lg p-3 mt-1" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Move To (Destination)</label>
+        <input type="text" name="destination" class="w-full border rounded-lg p-3 mt-1" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Preferred Move Date</label>
+        <input type="date" name="move_date" class="w-full border rounded-lg p-3 mt-1" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Inventory / Move Details</label>
+        <textarea name="inventory" class="w-full border rounded-lg p-3 mt-1 h-24"
+          placeholder="e.g. 2BR apartment, no stairs"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Notes / Special Requirements</label>
+        <textarea name="notes" class="w-full border rounded-lg p-3 mt-1 h-24"></textarea>
+      </div>
+
+     <!-- Legal Consent -->
+<div class="text-xs text-gray-600">
+  By submitting this form, you agree to receive transactional SMS messages from IN&OUT Moving regarding your move, including confirmations, scheduling updates, and service notifications. Message frequency varies. Reply STOP to opt out. Reply HELP for help. Message & data rates may apply. View our
+  <a href="/privacy-policy" class="underline">Privacy Policy</a> and
+  <a href="/terms-of-service" class="underline">Terms of Service</a>.
+</div>
+
+      <label class="flex items-center text-xs mt-2">
+        <input type="checkbox" required class="mr-2">
+        I consent to receive communications related to my move.
+      </label>
+
+      <button type="submit"
+        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+        Get My Quote
+      </button>
+    </form>
+  </div>
+
+  <!-- App Download -->
+  <div class="max-w-2xl mx-auto text-center mt-10">
+    <h2 class="text-xl font-semibold mb-4">Download the IN&OUT Movin App</h2>
+    <p class="text-sm text-gray-500 mb-4">Coming soon to iOS & Android</p>
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+      class="inline-block h-12 opacity-60 mr-4" alt="App Store (Coming Soon)" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+      class="inline-block h-12 opacity-60" alt="Google Play (Coming Soon)" />
+  </div>
+
+  <!-- Riley Assistant -->
+  <div class="max-w-2xl mx-auto text-center mt-12">
+    <h2 class="text-xl font-semibold mb-2">Talk to Riley</h2>
+    <p class="text-xs text-gray-500 mb-4">
+      Riley is an AI assistant that provides automated responses.
+    </p>
+
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-16 text-center text-gray-600">
+    <p class="mb-2">&copy; 2025 IN&OUT Moving. All rights reserved.</p>
+    <nav class="space-x-4 text-sm">
+      <a href="/about">About</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-of-service">Terms</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("leadForm");
+    if (!form) return;
+
+    // Create/find status area under the submit button
+    let statusMsg = document.getElementById("formStatus");
+    if (!statusMsg) {
+      statusMsg = document.createElement("div");
+      statusMsg.id = "formStatus";
+      statusMsg.style.marginTop = "12px";
+      form.appendChild(statusMsg);
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      // Reset status message each submit
+      statusMsg.className = "";
+      statusMsg.textContent = "";
+
+      // Honeypot support (optional): add <input name="company" hidden> if you want
+      const hp = form.querySelector('input[name="company"]');
+      if (hp && hp.value) {
+        form.reset();
+        return;
+      }
+
+      const raw = Object.fromEntries(new FormData(form));
+
+      // Map lead form -> Edge Function required fields
+      const payload = {
+        name: (raw.full_name || "").trim(),
+        email: (raw.email || "").trim(),
+        phone: (raw.phone || "").trim(),
+        subject: "Website Quote Request",
+        message: [
+          `Move From: ${(raw.address || "").trim()}`,
+          `Move To: ${(raw.destination || "").trim()}`,
+          `Preferred Move Date: ${(raw.move_date || "").trim()}`,
+          `Inventory / Move Details: ${(raw.inventory || "").trim()}`,
+          `Notes / Special Requirements: ${(raw.notes || "").trim()}`
+        ].join("\n"),
+
+        source: "landing_page",
+        consent: true
+      };
+
+      // Client-side guard for required fields your Edge Function needs
+      if (!payload.name || !payload.email || !payload.message.trim()) {
+        statusMsg.className = "text-red-600 text-sm mt-4";
+        statusMsg.textContent =
+          "Please complete your name, email, and move details before submitting.";
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          "https://gdiudffqjhidreqzklbl.supabase.co/functions/v1/contact-submit",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        let result = {};
+        try { result = await res.json(); } catch (_) {}
+
+        if (!res.ok) {
+          console.error("Submission failed:", res.status, result);
+          throw new Error(result?.error || "Submission failed");
+        }
+
+        form.reset();
+        statusMsg.className = "text-green-600 text-sm mt-4";
+        statusMsg.textContent =
+          "✅ Thanks! Your quote request has been received. A member of our team will contact you shortly.";
+
+      } catch (err) {
+        console.error("Form submit error:", err);
+
+        statusMsg.className = "text-red-600 text-sm mt-4";
+        statusMsg.innerHTML =
+          'There was a problem submitting your request. Please try again or call <strong>(833) 466-6881</strong> for immediate assistance.';
+      }
+    });
+  });
+})();
+</script>

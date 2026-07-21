@@ -1,145 +1,37 @@
-# SquareSpace Compatible Content for IN&OUT Moving
+# Squarespace content — DEPRECATED, see squarespace-*.html instead
 
-## Header Section (Hero Block)
-**Title:** IN&OUT Moving
-**Subtitle:** Professional moving services powered by AI technology and real-time tracking
-**Button Text:** Get Your Quote
-**Button Link:** #contact
+This file described an early, never-shipped design concept for the
+inandoutmovin.com Squarespace site: a Tally.so embedded form, three-tier
+pricing ($899 flat / $149-mo premium / custom enterprise), and placeholder
+app-store links. None of that matches the live site and it should not be
+used as a reference.
 
-## Features Section (Text Block)
-### Why Choose IN&OUT Moving?
+The actual live site is four Squarespace pages, each built from a single
+custom Code Block (HTML/CSS, with JS for the two form pages). The real
+source for each, pulled directly from the Squarespace page editor, lives in
+this repo as:
 
-**🤖 AI-Powered Quotes**
-Get instant, accurate moving estimates using our advanced AI technology. No waiting, no surprises.
+- `squarespace-home.html` — Home (`/`): the quote-request lead form (posts to
+  the `contact-submit` Supabase edge function), an app-download teaser
+  ("Coming soon to iOS & Android"), and a "Talk to Riley" section.
+- `squarespace-about.html` — About (`/about`): mission, "what you can expect,"
+  company story, a Riley/AI disclosure blurb, and a trust/compliance list.
+- `squarespace-services.html` — Services (`/services`): the four service
+  categories (Residential, Commercial, Long Distance, Loading & Unloading),
+  a "why choose us" grid, pricing card ($165/hr, 2 movers included), a
+  testimonial, and a closing CTA.
+- `squarespace-contact.html` — Contact (`/contact`): a second contact form
+  (name/email/phone/topic/message) that also posts to `contact-submit`.
+  **Known bug:** this form's fetch URL is the relative path
+  `/functions/v1/contact-submit`, which resolves against
+  `www.inandoutmovin.com` instead of the Supabase project — unlike the Home
+  page form, which correctly uses the full
+  `https://gdiudffqjhidreqzklbl.supabase.co/functions/v1/contact-submit` URL.
+  This almost certainly means Contact-page submissions are failing silently.
+  Fix: update the fetch URL in the Contact page's code block to the full
+  Supabase URL, matching the Home page.
 
-**📍 Real-Time GPS Tracking**
-Track your moving truck in real-time with live GPS updates and estimated arrival times.
-
-**📱 Mobile App Control**
-Manage your entire move from your phone. Schedule, track, communicate, and pay all in one app.
-
-**💬 Automated Updates**
-Stay informed with automatic text and email notifications throughout your moving process.
-
-**🎥 Video Consultations**
-Get personalized quotes through video calls with our moving experts for maximum accuracy.
-
-**👥 Professional Team**
-Experienced, friendly movers who treat your belongings with care and respect.
-
-
-**Get Your Custom Quote**
-Fill out our form below to receive personalized pricing based on your specific moving needs. No hidden fees, transparent pricing.
-
-## Contact Section (Embed Block)
-**Title:** Ready to Move?
-**Description:** Get started with IN&OUT Moving today. Fill out our quick form to receive your personalized quote and schedule your move.
-
-**Tally Form Embed Code:**
-```
-<iframe src="https://tally.so/embed/wMZAKE?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0" title="IN&OUT Moving Quote Request"></iframe>
-```
-
-## Custom CSS (Add to Design > Custom CSS)
-```css
-/* IN&OUT Moving Custom Styles */
-.hero-section {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    color: white;
-    text-align: center;
-    padding: 80px 20px;
-}
-
-.feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    margin: 40px 0;
-}
-
-.feature-card {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    margin: 40px 0;
-}
-
-.pricing-card {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.pricing-card.featured {
-    border: 2px solid #2563eb;
-    transform: scale(1.02);
-}
-
-.cta-button {
-    background: #2563eb;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    display: inline-block;
-    font-weight: 600;
-}
-
-.cta-button:hover {
-    background: #1d4ed8;
-}
-
-.footer {
-    background: #1e293b;
-    color: white;
-    padding: 60px 0 30px;
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
-    text-align: left;
-}
-```
-
-## App Download Section (Text Block)
-### Download the IN&OUT Moving App
-
-**Coming Soon to:**
-- 📱 iOS App Store
-- 🤖 Google Play Store
-
-Stay tuned for our mobile app launch!
-
-## Footer Content (Footer Block)
-**Company:** IN&OUT Moving
-**Tagline:** Professional moving services powered by AI technology
-**Contact:** info@inoutmoving.com
-**Phone:** (555) 123-MOVE
-
-**Services:**
-- Residential Moving
-- Commercial Moving
-- Long Distance
-- Storage Solutions
-
-**Support:**
-- Help Center
-- Track Your Move
-- Insurance Claims
-- Contact Us
+Squarespace is the source of truth for all four pages. When the live content
+changes, re-open Pages > [page] > (click into the block) > pencil/edit icon >
+expand > select all > copy, and paste the result into the matching file
+above so the repo stays accurate.

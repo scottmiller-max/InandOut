@@ -1,0 +1,300 @@
+<!--
+  LIVE SOURCE — Contact page (/contact) code block on inandoutmovin.com (Squarespace)
+  Pulled directly from the Squarespace page editor on 2026-07-20.
+  This is the actual embedded HTML/CSS/JS running in production right now.
+  Edit in Squarespace (Pages > Contact > code block), then re-sync this file
+  to keep the repo accurate — Squarespace is the source of truth, not this file.
+
+  KNOWN BUG (flagged, not fixed here — see commit message / chat):
+  the fetch() below posts to the relative path "/functions/v1/contact-submit",
+  which resolves against www.inandoutmovin.com, not the Supabase project. The
+  Home page's form uses the correct full Supabase URL. This form is very
+  likely failing silently for anyone who submits it. Needs a one-line fix in
+  the Squarespace code block: change the fetch URL to
+  "https://gdiudffqjhidreqzklbl.supabase.co/functions/v1/contact-submit".
+-->
+<section class="inout-contact" aria-labelledby="contact-heading">
+  <style>
+    .inout-contact {
+      background: #f3efdc;
+      padding: clamp(3rem, 6vw, 6rem) 1.5rem;
+    }
+
+    .inout-contact .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .page-head {
+      margin-bottom: 3rem;
+    }
+
+    .page-head .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .8rem;
+      color: #2f6b3f;
+      font-weight: 600;
+    }
+
+    .page-head h1 {
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      margin: .5rem 0 1rem;
+      color: #1f2d1f;
+    }
+
+    .page-head .lead {
+      font-size: 1.1rem;
+      max-width: 640px;
+      color: #2f2f2f;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    .grid.two {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .row.full {
+      margin-top: 1.5rem;
+    }
+
+    .row label {
+      font-weight: 600;
+      margin-bottom: .4rem;
+    }
+
+    .row input,
+    .row textarea {
+      padding: .75rem .8rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+    }
+
+    .row textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 140px;
+    }
+
+    .counter {
+      text-align: right;
+      font-size: .8rem;
+      color: #777;
+      margin-top: .25rem;
+    }
+
+    .consent {
+      margin-top: 1.5rem;
+    }
+
+    .consent label {
+      font-weight: 400;
+      font-size: .9rem;
+    }
+
+    .btn {
+      margin-top: 2rem;
+      padding: .9rem 1.4rem;
+      font-size: 1rem;
+      background: #2f6b3f;
+      color: #fff;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #275a35;
+    }
+
+    .note {
+      margin-top: 1rem;
+      font-size: .85rem;
+      color: #555;
+    }
+
+    .error {
+      display: none;
+      color: #b00020;
+      font-size: .85rem;
+      margin-top: .25rem;
+    }
+
+    .success {
+      display: none;
+      margin-top: 1rem;
+      color: #2f6b3f;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .grid.two {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+
+  <div class="wrap">
+    <header class="page-head">
+      <span class="eyebrow">Family owned since 2012</span>
+      <h1 id="contact-heading">Contact IN&OUT Moving</h1>
+      <p class="lead">
+        Have a question or planning a move? Send us a message and a member of our team
+        will respond as soon as possible.
+      </p>
+    </header>
+
+    <div class="card">
+      <form id="contactForm" novalidate>
+        <!-- Honeypot -->
+        <input type="text" name="company" tabindex="-1" autocomplete="off" hidden>
+
+        <div class="grid two">
+          <div class="row">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" required>
+            <div class="error" id="err-name">Please enter your name.</div>
+          </div>
+
+          <div class="row">
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" required>
+            <div class="error" id="err-email">Please enter a valid email.</div>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="row">
+            <label for="phone">Phone Number</label>
+            <input id="phone" name="phone" type="tel">
+          </div>
+
+          <div class="row">
+            <label for="topic">Message Topic</label>
+            <input id="topic" name="topic" type="text" placeholder="Move quote, question, support">
+          </div>
+        </div>
+
+        <div class="row full">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" maxlength="1000" required></textarea>
+          <div class="counter"><span id="count">0</span>/1000</div>
+          <div class="error" id="err-message">Please enter a message.</div>
+        </div>
+
+        <div class="row consent">
+          <label>
+            <input id="consent" name="consent" type="checkbox" required>
+            I consent to being contacted regarding my inquiry. Automated systems may assist.
+          </label>
+          <div class="error" id="err-consent">Consent is required.</div>
+        </div>
+
+        <button class="btn" type="submit">Send Message</button>
+
+        <p class="note">
+          Messages are reviewed during business hours. We do not sell or share your information.
+        </p>
+
+        <div class="success" id="successBox">
+          Thanks — your message has been sent. We’ll be in touch shortly.
+        </div>
+
+        <div class="error" id="fatalError">
+          Something went wrong. Please try again later or call us directly.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById('contactForm');
+      const msg = document.getElementById('message');
+      const count = document.getElementById('count');
+
+      msg.addEventListener('input', () => {
+        count.textContent = msg.value.length;
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Honeypot
+        if (form.company.value) return;
+
+        let valid = true;
+
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
+        const consent = document.getElementById('consent');
+
+        document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+        document.getElementById('fatalError').style.display = 'none';
+        document.getElementById('successBox').style.display = 'none';
+
+        if (!name.value.trim()) {
+          document.getElementById('err-name').style.display = 'block';
+          valid = false;
+        }
+
+        if (!email.checkValidity()) {
+          document.getElementById('err-email').style.display = 'block';
+          valid = false;
+        }
+
+        if (!msg.value.trim()) {
+          document.getElementById('err-message').style.display = 'block';
+          valid = false;
+        }
+
+        if (!consent.checked) {
+          document.getElementById('err-consent').style.display = 'block';
+          valid = false;
+        }
+
+        if (!valid) return;
+
+        try {
+          const data = Object.fromEntries(
+            [...new FormData(form)].filter(([k, v]) => v !== '' && k !== 'company')
+          );
+
+          const res = await fetch('/functions/v1/contact-submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (!res.ok) throw new Error('fail');
+
+          document.getElementById('successBox').style.display = 'block';
+          form.reset();
+          count.textContent = '0';
+
+        } catch {
+          document.getElementById('fatalError').style.display = 'block';
+        }
+      });
+    })();
+  </script>
+</section>

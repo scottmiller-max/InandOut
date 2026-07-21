@@ -1,0 +1,224 @@
+<!--
+  LIVE SOURCE — About page (/about) code block on inandoutmovin.com (Squarespace)
+  Pulled directly from the Squarespace page editor on 2026-07-20.
+  This is the actual embedded HTML/CSS running in production right now.
+  Edit in Squarespace (Pages > About > code block), then re-sync this file to
+  keep the repo accurate — Squarespace is the source of truth, not this file.
+-->
+<section class="inout-about" aria-labelledby="about-heading">
+  <div class="wrap">
+
+    <!-- Header -->
+    <header class="hero">
+      <span class="kicker">About IN&OUT Moving</span>
+      <h1 id="about-heading">We Help People Begin Again</h1>
+      <p class="intro">
+        Moving isn’t just boxes and trucks — it’s a life change. Excitement and stress often show up at the same time:
+        “How do I make this smooth? Who can I trust? And what will this really cost?”
+      </p>
+      <p class="intro">
+        That moment — the promise of a new chapter mixed with worry — is exactly why IN&OUT Moving exists.
+      </p>
+    </header>
+
+    <!-- Mission & Values -->
+    <section class="grid" aria-label="Mission and values">
+      <article class="card">
+        <h2>Our Mission</h2>
+        <p>
+          We make moving feel easier from the first estimate to the final box — with a process built for clarity,
+          professionalism, and support.
+        </p>
+        <p>
+          Moving is moving your life. You deserve an experience that honors that.
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>What You Can Expect</h2>
+        <ul>
+          <li><strong>Clear</strong>: transparent estimates so you can plan with confidence</li>
+          <li><strong>Professional</strong>: respectful crews who protect your home and belongings</li>
+          <li><strong>Supportive</strong>: guidance and communication from start to finish</li>
+          <li><strong>Prepared</strong>: organized workflows, documentation, and reliable arrival windows</li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- Company Story -->
+    <section class="story">
+      <h2>Our Story</h2>
+      <p>
+        We’ve watched customers feel overwhelmed by unclear timelines, surprise costs, and rushed service — and we knew
+        there was a better way.
+      </p>
+      <p>
+        IN&OUT Moving was built around one question: <em>What if moving could feel easier — from the first estimate to the final box?</em>
+        That question shaped everything we do: show up prepared, communicate clearly, and treat every move like it matters — because it does.
+      </p>
+      <p>
+        As we’ve grown, we’ve continued investing in tools and systems that help customers stay informed and in control.
+        The goal is simple: help you move forward with confidence.
+      </p>
+    </section>
+
+    <!-- Technology & AI Disclosure -->
+    <section class="card">
+      <h2>Technology & Support</h2>
+      <p>
+        We use modern scheduling, documentation, and guidance tools to streamline your experience. This includes optional
+        assistance from <strong>Riley</strong>, our AI-powered assistant, to help with general questions, planning, and app guidance.
+      </p>
+      <p class="muted">
+        Riley provides automated responses for common questions and workflow help. Riley does not replace human staff and
+        cannot make binding commitments on behalf of the company.
+      </p>
+    </section>
+
+    <!-- Trust & Compliance -->
+    <section class="trust">
+      <h2>Our Commitment to You</h2>
+      <ul>
+        <li>Clarity over confusion — no guessing on what happens next</li>
+        <li>Respect for your property, time, and personal information</li>
+        <li>Transparent terms, policies, and disclosures</li>
+        <li>Responsive human support when you need it</li>
+        <li>Continuous improvement through feedback</li>
+      </ul>
+    </section>
+
+    <!-- CTA -->
+    <footer class="cta">
+      <h2>Ready to Get Started?</h2>
+      <p>
+        Choose clarity over chaos. We’ll help you plan the move and execute it with care.
+      </p>
+      <a href="/services" class="btn">Explore Services</a>
+              <a href="/" class="btn btn-secondary">Get Your Free Quote</a>
+    </footer>
+
+  </div>
+</section>
+
+<style>
+/* ===============================
+   IN&OUT Moving — About Page
+   Scoped + Production Safe
+   =============================== */
+
+.inout-about {
+  --bg: #f4f8fd;
+  --card: #ffffff;
+  --accent: #2563eb;
+  --text: #1e293b;
+  --muted: #475569;
+  --shadow: 0 10px 25px rgba(15,23,42,.08);
+  --radius: 22px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.inout-about .wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 20px 72px;
+}
+
+.inout-about .kicker {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.inout-about h1 {
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  margin-bottom: 16px;
+}
+
+.inout-about h2 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+}
+
+.inout-about p {
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.inout-about .muted {
+  font-size: .9rem;
+  color: var(--muted);
+}
+
+.inout-about .hero {
+  max-width: 820px;
+  margin-bottom: 48px;
+}
+
+.inout-about .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.inout-about .card {
+  background: var(--card);
+  padding: 28px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.inout-about ul {
+  padding-left: 18px;
+}
+
+.inout-about li {
+  margin-bottom: 8px;
+}
+
+.inout-about .story,
+.inout-about .trust {
+  max-width: 920px;
+  margin-bottom: 48px;
+}
+
+.inout-about .cta {
+  text-align: center;
+  background: var(--card);
+  padding: 36px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.inout-about .btn {
+  display: inline-block;
+  margin-top: 16px;
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.inout-about .btn:hover {
+  opacity: .9;
+}
+
+.inout-about .btn-secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.inout-about .btn-secondary:hover {
+  opacity: 1;
+  background: rgba(37,99,235,.08);
+}
+</style>
