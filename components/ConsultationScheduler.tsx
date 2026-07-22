@@ -160,7 +160,7 @@ export default function ConsultationScheduler() {
           <TouchableOpacity style={styles.conversationCard}>
             <TouchableOpacity onPress={() => handleImagePress('https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg')}>
               <Image
-                source={{ uri: 'https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg' }}
+                source={require('@/assets/images/care-protection.jpg')}
                 style={styles.avatar}
                 resizeMode="cover"
               />
@@ -308,21 +308,21 @@ export default function ConsultationScheduler() {
           <View style={styles.photosGrid}>
             <TouchableOpacity onPress={() => handleImagePress('https://images.pexels.com/photos/4246266/pexels-photo-4246266.jpeg')}>
               <Image
-                source={{ uri: 'https://images.pexels.com/photos/4246266/pexels-photo-4246266.jpeg' }}
+                source={require('@/assets/images/crew-carry.jpg')}
                 style={styles.photoThumbnail}
                 resizeMode="cover"
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleImagePress('https://images.pexels.com/photos/7464230/pexels-photo-7464230.jpeg')}>
               <Image
-                source={{ uri: 'https://images.pexels.com/photos/7464230/pexels-photo-7464230.jpeg' }}
+                source={require('@/assets/images/packed-organized.jpg')}
                 style={styles.photoThumbnail}
                 resizeMode="cover"
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleImagePress('https://images.pexels.com/photos/6195122/pexels-photo-6195122.jpeg')}>
               <Image
-                source={{ uri: 'https://images.pexels.com/photos/6195122/pexels-photo-6195122.jpeg' }}
+                source={require('@/assets/images/family-settled.jpg')}
                 style={styles.photoThumbnail}
                 resizeMode="cover"
               />

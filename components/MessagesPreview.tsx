@@ -34,7 +34,7 @@ export const MessagesPreview: React.FC<MessagesPreviewProps> = ({ style }) => {
           moveId: 'move-1',
           senderType: 'team',
           senderName: 'Mike Rodriguez',
-          senderAvatar: 'https://images.pexels.com/photos/5025665/pexels-photo-5025665.jpeg',
+          senderAvatar: require('@/assets/images/care-protection.jpg'),
           messageContent: "We're 15 minutes away from your location. All items are secure and ready for delivery.",
           messageType: 'text',
           attachmentUrls: [],
@@ -59,7 +59,7 @@ export const MessagesPreview: React.FC<MessagesPreviewProps> = ({ style }) => {
           moveId: 'move-1',
           senderType: 'team',
           senderName: 'Sarah Chen',
-          senderAvatar: 'https://images.pexels.com/photos/6195122/pexels-photo-6195122.jpeg',
+          senderAvatar: require('@/assets/images/family-settled.jpg'),
           messageContent: 'Packing is complete! All fragile items have been wrapped with extra care.',
           messageType: 'text',
           attachmentUrls: [],
@@ -141,7 +141,7 @@ export const MessagesPreview: React.FC<MessagesPreviewProps> = ({ style }) => {
               <View style={styles.messageLeft}>
                 {message.senderAvatar ? (
                   <Image
-                    source={{ uri: message.senderAvatar }}
+                    source={typeof message.senderAvatar === 'string' ? { uri: message.senderAvatar } : message.senderAvatar}
                     style={styles.senderAvatar}
                     resizeMode="cover"
                   />

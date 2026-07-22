@@ -29,7 +29,7 @@ export default function ServicesScreen() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <Image
-            source={{ uri: 'https://images.pexels.com/photos/4246266/pexels-photo-4246266.jpeg' }}
+            source={require('@/assets/images/crew-carry.jpg')}
             style={styles.heroImage}
             resizeMode="cover"
           />
@@ -177,7 +177,7 @@ export default function ServicesScreen() {
         <View style={styles.section}>
           <View style={styles.testimonialCard}>
             <Image
-              source={{ uri: 'https://images.pexels.com/photos/6195122/pexels-photo-6195122.jpeg' }}
+              source={require('@/assets/images/family-settled.jpg')}
               style={styles.testimonialImage}
               resizeMode="cover"
             />

@@ -113,7 +113,7 @@ export default function HomeScreen() {
         {/* Hero Image */}
         <View style={styles.heroSection}>
           <Image
-            source={{ uri: 'https://images.pexels.com/photos/4246209/pexels-photo-4246209.jpeg' }}
+            source={require('@/assets/images/hero-loading.jpg')}
             style={styles.heroImage}
             resizeMode="cover"
           />
@@ -231,7 +231,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.testimonialCard}>
             <Image
-              source={{ uri: 'https://images.pexels.com/photos/6195122/pexels-photo-6195122.jpeg' }}
+              source={require('@/assets/images/family-settled.jpg')}
               style={styles.testimonialImage}
               resizeMode="cover"
             />

@@ -173,7 +173,7 @@ export default function QuoteScreen() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <Image
-            source={{ uri: 'https://images.pexels.com/photos/4246266/pexels-photo-4246266.jpeg' }}
+            source={require('@/assets/images/crew-carry.jpg')}
             style={styles.heroImage}
             resizeMode="cover"
           />
@@ -331,7 +331,7 @@ export default function QuoteScreen() {
         <View style={styles.section}>
           <View style={styles.testimonialCard}>
             <Image
-              source={{ uri: 'https://images.pexels.com/photos/7464230/pexels-photo-7464230.jpeg' }}
+              source={require('@/assets/images/packed-organized.jpg')}
               style={styles.testimonialImage}
               resizeMode="cover"
             />
