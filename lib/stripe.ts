@@ -14,7 +14,7 @@
  */
 
 import { Platform, Linking } from 'react-native';
-import { supabase } from '@/lib/supabase'; // <-- adjust if your client lives elsewhere
+import { supabase } from '@/services/supabase';
 
 export type CheckoutMode = 'payment' | 'subscription';
 

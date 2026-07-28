@@ -37,7 +37,7 @@ type PriceMode = 'hourly' | 'flat';
 type Billing = 'monthly' | 'yearly';
 
 /** Where to send someone who taps "Join" while signed out. Change if your route differs. */
-const AUTH_ROUTE = '/login';
+const AUTH_ROUTE = '/(tabs)';
 
 export default function PricingScreen() {
   const router = useRouter();
