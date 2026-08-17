@@ -6,7 +6,10 @@ export default function AdminLayout() {
     <AdminRouteGuard requiredPermission="admin:access" minimumRole="admin">
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
-      <Stack.Screen name="leads" />
+        <Stack.Screen name="leads" />
+        <Stack.Screen name="quotes" />
+        <Stack.Screen name="messages" />
+        <Stack.Screen name="staff" />
         <Stack.Screen name="crm" />
         <Stack.Screen name="profile" />
       </Stack>
