@@ -5,6 +5,8 @@ import { PageContainer } from '@/components/PageContainer';
 import { useRouter } from 'expo-router';
 import { Calculator, Video, Bot, Calendar, ArrowRight, Star, Truck, MapPin, Clock, Phone } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
+import { roleService } from '@/services/roles';
+import { supabase } from '@/services/supabase';
 import { AuthModals } from '@/components/AuthModals';
 import { CountdownWidget } from '@/components/CountdownWidget';
 import { MessagesPreview } from '@/components/MessagesPreview';
@@ -65,10 +67,21 @@ export default function HomeScreen() {
     setShowAuthModal(true);
   };
 
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-  };
-
+  const handleAuthSuccess = async () => {
+  setShowAuthModal(false);
+  try {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const role = await roleService.getUserRole(authUser.id);
+      if (role === 'admin' || role === 'master_admin') {
+        router.replace('/admin');
+      }
+    }
+  } catch (error) {
+    console.error('Post-signin role check failed:', error);
+  }
+};
+  
   const handleSwitchAuthMode = (mode: 'signin' | 'signup') => {
     setAuthMode(mode);
   };
