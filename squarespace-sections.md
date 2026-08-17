@@ -129,8 +129,8 @@ Stay tuned for our mobile app launch!
 ## Footer Content (Footer Block)
 **Company:** IN&OUT Moving
 **Tagline:** Professional moving services powered by AI technology
-**Contact:** info@inoutmoving.com
-**Phone:** (555) 123-MOVE
+**Contact:** info@inandoutmovin.com
+**Phone:** 833-466-6881
 
 **Services:**
 - Residential Moving
