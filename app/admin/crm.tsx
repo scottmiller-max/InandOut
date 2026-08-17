@@ -27,15 +27,33 @@ export default function AdminCRMScreen() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'value'>('date');
   const [showDashboard, setShowDashboard] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>('summary');
 
   useEffect(() => {
-    loadCustomers();
-  }, []);
+    checkAdminAccess();
+  }, [user]);
+
+  useEffect(() => {
+    if (!accessDenied) {
+      loadCustomers();
+    }
+  }, [accessDenied]);
 
   useEffect(() => {
     filterCustomers();
   }, [searchQuery, customers, filterStatus, sortBy]);
+
+  const checkAdminAccess = () => {
+    // In production, check user role from database
+    // For demo, allow access in development or for specific email domains
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isAdminEmail = user?.email?.includes('@inoutmoving.com') || user?.email?.includes('@admin.com');
+    
+    if (!isDevelopment && !isAdminEmail) {
+      setAccessDenied(true);
+    }
+  };
 
   const loadCustomers = async () => {
     try {
@@ -122,6 +140,26 @@ export default function AdminCRMScreen() {
   const handleBackToApp = () => {
     router.push('/(tabs)');
   };
+
+  if (accessDenied) {
+    return (
+      <PageContainer scroll={false}>
+        <View style={styles.accessDeniedContainer}>
+          <View style={styles.accessDeniedContent}>
+            <Users size={64} color="#dc2626" />
+            <Text style={styles.accessDeniedTitle}>Access Denied</Text>
+            <Text style={styles.accessDeniedText}>
+              This admin area is restricted to authorized personnel only.
+            </Text>
+            <TouchableOpacity style={styles.backButton} onPress={handleBackToApp}>
+              <ArrowLeft size={16} color="#ffffff" />
+              <Text style={styles.backButtonText}>Back to App</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </PageContainer>
+    );
+  }
 
   return (
     <ErrorBoundary>
@@ -487,6 +525,57 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+  },
+  accessDeniedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  accessDeniedContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    maxWidth: 400,
+    width: '100%',
+  },
+  accessDeniedTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#dc2626',
+    fontFamily: 'Inter-Bold',
+    marginTop: 16,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  accessDeniedText: {
+    fontSize: 16,
+    color: '#64748b',
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  backButton: {
+    backgroundColor: '#2563eb',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    fontFamily: 'Inter-SemiBold',
+    marginLeft: 8,
   },
   dashboardSection: {
     paddingHorizontal: 20,

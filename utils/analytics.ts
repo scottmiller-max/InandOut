@@ -126,9 +126,9 @@ export const seoService = {
       '@type': 'MovingCompany',
       name: 'IN&OUT Moving',
       description: 'Professional moving services with AI-powered quotes and real-time tracking',
-      url: 'https://inandoutmovin.com',
-      telephone: '+1-833-466-6881',
-      email: 'info@inandoutmovin.com',
+      url: 'https://inoutmoving.com',
+      telephone: '+1-555-123-MOVE',
+      email: 'info@inoutmoving.com',
       address: {
         '@type': 'PostalAddress',
         addressCountry: 'US',
