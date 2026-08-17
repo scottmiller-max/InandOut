@@ -262,7 +262,10 @@ export default function AdminDashboardScreen() {
             <View style={styles.alertsSection}>
               <Text style={styles.sectionTitle}>Action Required</Text>
               {(stats?.pending_deposits || 0) > 0 && (
-                <TouchableOpacity style={styles.alertCard}>
+                <TouchableOpacity
+                  style={styles.alertCard}
+                  onPress={() => router.push('/admin/quotes' as any)}
+                >
                   <View style={[styles.alertIcon, { backgroundColor: '#fef2f2' }]}>
                     <DollarSign size={20} color="#ef4444" />
                   </View>
@@ -276,7 +279,10 @@ export default function AdminDashboardScreen() {
                 </TouchableOpacity>
               )}
               {(stats?.pending_approvals || 0) > 0 && (
-                <TouchableOpacity style={styles.alertCard}>
+                <TouchableOpacity
+                  style={styles.alertCard}
+                  onPress={() => router.push('/admin/leads' as any)}
+                >
                   <View style={[styles.alertIcon, { backgroundColor: '#fff7ed' }]}>
                     <FileText size={20} color="#f97316" />
                   </View>
@@ -303,11 +309,14 @@ export default function AdminDashboardScreen() {
                 <Text style={styles.summaryValue}>{stats?.total_customers || 0}</Text>
                 <Text style={styles.summaryLabel}>Total Customers</Text>
               </TouchableOpacity>
-              <View style={styles.summaryCard}>
+              <TouchableOpacity
+                style={styles.summaryCard}
+                onPress={() => router.push('/admin/messages' as any)}
+              >
                 <Bell size={24} color="#f97316" />
                 <Text style={styles.summaryValue}>{stats?.unread_messages || 0}</Text>
                 <Text style={styles.summaryLabel}>Unread Messages</Text>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
 
