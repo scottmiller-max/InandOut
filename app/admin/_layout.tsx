@@ -10,6 +10,9 @@ export default function AdminLayout() {
         <Stack.Screen name="quotes" />
         <Stack.Screen name="messages" />
         <Stack.Screen name="staff" />
+        <Stack.Screen name="roles" />
+        <Stack.Screen name="audit-log" />
+        <Stack.Screen name="settings" />
         <Stack.Screen name="crm" />
         <Stack.Screen name="profile" />
       </Stack>
