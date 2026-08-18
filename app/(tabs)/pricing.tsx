@@ -232,13 +232,6 @@ export default function PricingScreen() {
           </View>
         ))}
 
-        <Text style={styles.finePrint}>
-          Hourly rates are for a 2-mover crew (labor; 2-hour minimum). "By home size" shows estimated
-          labor at typical hours — a 20ft U-Haul truck + $1.50/mi are added on top. Moves over 75 miles
-          are priced by weight; text us for a long-distance estimate. Junk / haul-away jobs keep our
-          simple flat-quote model.
-        </Text>
-
         {/* ============ MEMBERSHIP ============ */}
         <View style={styles.clubHeader}>
           <View style={styles.clubBadge}>
