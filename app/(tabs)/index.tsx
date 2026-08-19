@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, View, StyleSheet, Animated, Dimensions, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { Text, View, StyleSheet, Animated, Dimensions, TouchableOpacity, ScrollView, Image, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PageContainer } from '@/components/PageContainer';
 import { useRouter } from 'expo-router';
-import { Calculator, Calendar, ArrowRight, Star, Truck, MapPin, Clock, Phone } from 'lucide-react-native';
+import { Calculator, Calendar, ArrowRight, Star, Truck, MapPin, Clock, Phone, ChevronDown, Package, Briefcase } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { roleService } from '@/services/roles';
 import { supabase } from '@/services/supabase';
@@ -26,6 +26,8 @@ export default function HomeScreen() {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [activeMove, setActiveMove] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [servicesExpanded, setServicesExpanded] = useState(false);
+  const [showLongDistanceInfo, setShowLongDistanceInfo] = useState(false);
 
   const truckPosition = useRef(new Animated.Value(width + 100)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -180,14 +182,102 @@ export default function HomeScreen() {
               <ArrowRight size={16} color="#2563eb" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/(tabs)/services')}>
-              <Truck size={32} color="#059669" />
-              <Text style={styles.actionTitle}>Our Services</Text>
-              <Text style={styles.actionDescription}>
-                Residential & commercial moving
-              </Text>
-              <ArrowRight size={16} color="#059669" />
-            </TouchableOpacity>
+            <View style={styles.servicesExpandableCard}>
+              <TouchableOpacity
+                style={styles.servicesHeaderRow}
+                onPress={() => setServicesExpanded(!servicesExpanded)}
+                activeOpacity={0.9}
+              >
+                <Truck size={32} color="#059669" />
+                <View style={styles.servicesHeaderText}>
+                  <Text style={styles.servicesHeaderTitle}>Our Services</Text>
+                  <Text style={styles.servicesHeaderDesc}>Residential & commercial moving</Text>
+                </View>
+                <ChevronDown
+                  size={20}
+                  color="#059669"
+                  style={{ transform: [{ rotate: servicesExpanded ? '180deg' : '0deg' }] }}
+                />
+              </TouchableOpacity>
+
+              {servicesExpanded && (
+                <View style={styles.servicesDropdown}>
+                  <TouchableOpacity
+                    style={styles.serviceOptionCard}
+                    onPress={() => router.push('/(tabs)/pricing?section=homeSize')}
+                    activeOpacity={0.85}
+                  >
+                    <Truck size={22} color="#2563eb" />
+                    <View style={styles.serviceOptionText}>
+                      <Text style={styles.serviceOptionTitle}>Residential Moving</Text>
+                      <Text style={styles.serviceOptionDescription}>Complete home relocation with packing, loading & setup</Text>
+                    </View>
+                    <ArrowRight size={16} color="#2563eb" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.serviceOptionCard}
+                    onPress={() => router.push('/(tabs)/pricing?tier=Deluxe')}
+                    activeOpacity={0.85}
+                  >
+                    <Briefcase size={22} color="#2563eb" />
+                    <View style={styles.serviceOptionText}>
+                      <Text style={styles.serviceOptionTitle}>Commercial Moving</Text>
+                      <Text style={styles.serviceOptionDescription}>Office & business relocations with minimal downtime</Text>
+                    </View>
+                    <ArrowRight size={16} color="#2563eb" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.serviceOptionCard}
+                    onPress={() => setShowLongDistanceInfo(!showLongDistanceInfo)}
+                    activeOpacity={0.85}
+                  >
+                    <MapPin size={22} color="#2563eb" />
+                    <View style={styles.serviceOptionText}>
+                      <Text style={styles.serviceOptionTitle}>Long Distance Moving</Text>
+                      <Text style={styles.serviceOptionDescription}>Cross-country & interstate moves with tracking</Text>
+                    </View>
+                    <ChevronDown
+                      size={16}
+                      color="#2563eb"
+                      style={{ transform: [{ rotate: showLongDistanceInfo ? '180deg' : '0deg' }] }}
+                    />
+                  </TouchableOpacity>
+
+                  {showLongDistanceInfo && (
+                    <View style={styles.longDistanceInfo}>
+                      <Text style={styles.longDistanceInfoText}>
+                        Long-distance moves are custom quoted based on distance and load. Email us at{' '}
+                        <Text
+                          style={styles.longDistanceLink}
+                          onPress={() => Linking.openURL('mailto:scottmiller@inandoutmovin.com')}
+                        >scottmiller@inandoutmovin.com</Text>
+                        {' '}or use our{' '}
+                        <Text
+                          style={styles.longDistanceLink}
+                          onPress={() => Linking.openURL('https://inandoutmovin.com/contact')}
+                        >contact form</Text>
+                        {' '}for a personalized quote.
+                      </Text>
+                    </View>
+                  )}
+
+                  <TouchableOpacity
+                    style={styles.serviceOptionCard}
+                    onPress={() => router.push('/(tabs)/pricing?tier=Standard')}
+                    activeOpacity={0.85}
+                  >
+                    <Package size={22} color="#2563eb" />
+                    <View style={styles.serviceOptionText}>
+                      <Text style={styles.serviceOptionTitle}>Loading & Unloading</Text>
+                      <Text style={styles.serviceOptionDescription}>Expert loading & unloading for any move</Text>
+                    </View>
+                    <ArrowRight size={16} color="#2563eb" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
 
             {isAuthenticated && (
               <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/(tabs)/track')}>
@@ -389,6 +479,81 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     marginLeft: 16,
     flex: 1,
+  },
+  servicesExpandableCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  servicesHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  servicesHeaderText: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  servicesHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 4,
+  },
+  servicesHeaderDesc: {
+    fontSize: 14,
+    color: '#64748b',
+    fontFamily: 'Inter-Regular',
+  },
+  servicesDropdown: {
+    marginTop: 12,
+    gap: 8,
+  },
+  serviceOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    gap: 12,
+  },
+  serviceOptionText: {
+    flex: 1,
+  },
+  serviceOptionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1e293b',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 2,
+  },
+  serviceOptionDescription: {
+    fontSize: 13,
+    color: '#64748b',
+    fontFamily: 'Inter-Regular',
+  },
+  longDistanceInfo: {
+    marginTop: 4,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#fef3c7',
+  },
+  longDistanceInfoText: {
+    fontSize: 13,
+    color: '#78350f',
+    fontFamily: 'Inter-Regular',
+    lineHeight: 19,
+  },
+  longDistanceLink: {
+    color: '#2563eb',
+    textDecorationLine: 'underline',
+    fontFamily: 'Inter-SemiBold',
   },
   testimonialCard: {
     borderRadius: 16,

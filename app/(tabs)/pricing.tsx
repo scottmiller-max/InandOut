@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   Check,
   Star,
@@ -47,6 +47,35 @@ export default function PricingScreen() {
   const [busyPlan, setBusyPlan] = useState<ClubPlan['key'] | null>(null);
 
   const flatRow = FLAT_PACKAGES[sizeIndex];
+
+  const params = useLocalSearchParams();
+  const scrollRef = useRef<ScrollView>(null);
+  const layoutOffsets = useRef<Record<string, number>>({}).current;
+  const [highlightedTier, setHighlightedTier] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tier = typeof params.tier === 'string' ? params.tier : null;
+    const section = typeof params.section === 'string' ? params.section : null;
+
+    if (section === 'homeSize') {
+      setMode('flat');
+      const timer = setTimeout(() => {
+        const y = layoutOffsets.homeSize;
+        if (y != null) scrollRef.current?.scrollTo({ y, animated: true });
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+
+    if (tier) {
+      const timer = setTimeout(() => {
+        const y = layoutOffsets[tier];
+        if (y != null) scrollRef.current?.scrollTo({ y, animated: true });
+        setHighlightedTier(tier);
+        setTimeout(() => setHighlightedTier(null), 3000);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [params.tier, params.section]);
 
   const openText = (message: string) => {
     const sep = Platform.OS === 'ios' ? '&' : '?';
@@ -117,6 +146,7 @@ export default function PricingScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
@@ -156,7 +186,10 @@ export default function PricingScreen() {
 
         {/* Home-size selector (only for flat) */}
         {mode === 'flat' && (
-          <View style={styles.sizeRow}>
+          <View
+            style={styles.sizeRow}
+            onLayout={(e) => { layoutOffsets.homeSize = e.nativeEvent.layout.y; }}
+          >
             {FLAT_PACKAGES.map((row, i) => (
               <TouchableOpacity
                 key={row.size}
@@ -176,7 +209,8 @@ export default function PricingScreen() {
         {TIERS.map((tier) => (
           <View
             key={tier.key}
-            style={[styles.tierCard, tier.popular && styles.tierCardPopular]}
+            style={[styles.tierCard, tier.popular && styles.tierCardPopular, highlightedTier === tier.key && styles.tierCardHighlighted]}
+            onLayout={(e) => { layoutOffsets[tier.key] = e.nativeEvent.layout.y; }}
           >
             {tier.popular && (
               <View style={styles.popularBadge}>
@@ -443,6 +477,11 @@ const styles = StyleSheet.create({
   tierCardPopular: {
     borderColor: '#00783C',
     borderWidth: 2,
+  },
+  tierCardHighlighted: {
+    borderColor: '#00783C',
+    borderWidth: 2,
+    backgroundColor: '#f0fdf4',
   },
   popularBadge: {
     position: 'absolute',

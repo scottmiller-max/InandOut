@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, MessageSquare, User, Calculator, Truck, Shield } from 'lucide-react-native';
+import { Chrome as Home, MessageSquare, User, Calculator, Shield } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function TabLayout() {
@@ -41,16 +41,6 @@ export default function TabLayout() {
           href: isAdmin ? null : undefined,
           tabBarIcon: ({ size, color }) => (
             <Calculator size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="services"
-        options={{
-          title: 'Services',
-          href: isAuthenticated ? null : undefined,
-          tabBarIcon: ({ size, color }) => (
-            <Truck size={size} color={color} />
           ),
         }}
       />

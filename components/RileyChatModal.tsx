@@ -10,10 +10,10 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Linking,
 } from 'react-native';
 import { X, Send } from 'lucide-react-native';
 import { sendToRiley, RileyMessage } from '@/services/rileyAI';
+import { useRouter } from 'expo-router';
 
 interface RileyChatModalProps {
   visible: boolean;
@@ -39,7 +39,6 @@ interface ChatBubble {
   isUser: boolean;
 }
 
-const STORE_URL = 'https://www.inandoutmovin.com/store';
 const SUPPORT_PHONE = '833-466-6881';
 const GREETING =
   "Aloha! I'm Riley, your IN&OUT Moving assistant. 👋 I can help with a quick moving, hauling, or junk removal quote, book 2 hours of labor, check on your move, or answer any questions. What can I help you with today?";
@@ -69,6 +68,7 @@ export const RileyChatModal: React.FC<RileyChatModalProps> = ({
   userRole = 'customer',
   contextData,
 }) => {
+  const router = useRouter();
   const [messages, setMessages] = useState<ChatBubble[]>([{ text: GREETING, isUser: false }]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -136,14 +136,15 @@ export const RileyChatModal: React.FC<RileyChatModalProps> = ({
   const handleChip = (chip: { label: string; msg?: string; store?: boolean }) => {
     if (isSending) return;
     if (chip.store) {
-      Linking.openURL(STORE_URL).catch(() => {});
       setMessages((prev) => [
         ...prev,
         {
-          text: "Great — I've opened our booking page for 2 hours of labor. Add it to your cart and check out, and our team will review the details and confirm your time with you. Want me to help make sure 2 hours is the right fit first?",
+          text: "I've opened our Load & Go option on the Pricing page — that's 2 hours of professional loading or unloading labor. Our team will review the details and confirm your time with you. Let me know if you'd like help making sure 2 hours is the right fit!",
           isUser: false,
         },
       ]);
+      onClose();
+      router.push('/(tabs)/pricing?tier=Standard');
       return;
     }
     if (chip.msg) ask(chip.msg);
