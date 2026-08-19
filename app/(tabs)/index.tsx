@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, Animated, Dimensions, TouchableOpacity, ScrollV
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PageContainer } from '@/components/PageContainer';
 import { useRouter } from 'expo-router';
-import { Calculator, Video, Bot, Calendar, ArrowRight, Star, Truck, MapPin, Clock, Phone } from 'lucide-react-native';
+import { Calculator, Calendar, ArrowRight, Star, Truck, MapPin, Clock, Phone } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { roleService } from '@/services/roles';
 import { supabase } from '@/services/supabase';
@@ -113,7 +113,7 @@ export default function HomeScreen() {
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>
-            {isAuthenticated ? `Welcome back, ${user?.firstName}!` : 'Welcome to IN&OUT Moving'}
+            {isAuthenticated ? `Welcome back, ${user?.firstName}!` : 'Welcome to IN&OUT Movin'}
           </Text>
           <Text style={styles.welcomeSubtitle}>
             {isAuthenticated 
@@ -199,44 +199,6 @@ export default function HomeScreen() {
                 <ArrowRight size={16} color="#f59e0b" />
               </TouchableOpacity>
             )}
-          </View>
-        </View>
-
-        {/* Features Showcase */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Why Choose IN&OUT Moving?</Text>
-          <View style={styles.featuresGrid}>
-            <View style={styles.featureCard}>
-              <Bot size={24} color="#2563eb" />
-              <Text style={styles.featureTitle}>AI-Powered Quotes</Text>
-              <Text style={styles.featureDescription}>
-                Get instant, accurate estimates using advanced AI technology
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <MapPin size={24} color="#2563eb" />
-              <Text style={styles.featureTitle}>Real-Time Tracking</Text>
-              <Text style={styles.featureDescription}>
-                Track your moving truck with live GPS updates and ETA
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Video size={24} color="#2563eb" />
-              <Text style={styles.featureTitle}>Video Consultations</Text>
-              <Text style={styles.featureDescription}>
-                Get personalized quotes through video calls with experts
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Star size={24} color="#2563eb" />
-              <Text style={styles.featureTitle}>5-Star Service</Text>
-              <Text style={styles.featureDescription}>
-                Professional, insured team with excellent customer reviews
-              </Text>
-            </View>
           </View>
         </View>
 
@@ -427,40 +389,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     marginLeft: 16,
     flex: 1,
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  featureCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  featureTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
-    fontFamily: 'Inter-SemiBold',
-    marginTop: 12,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  featureDescription: {
-    fontSize: 12,
-    color: '#64748b',
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-    lineHeight: 16,
   },
   testimonialCard: {
     borderRadius: 16,
