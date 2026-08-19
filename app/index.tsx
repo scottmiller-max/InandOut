@@ -43,7 +43,7 @@ export default function Home() {
     Animated.sequence([
       Animated.timing(truckPosition, {
         toValue: width + 200,
-        duration: 3000,
+        duration: 1800,
         useNativeDriver: true,
       }),
       Animated.timing(fadeAnim, {
@@ -78,7 +78,7 @@ export default function Home() {
         <Animated.View
           style={[
             styles.truckContainer,
-            { transform: [{ translateX: truckPosition }, { scaleX: 1 }] }
+            { transform: [{ translateX: truckPosition }, { scaleX: -1 }] }
           ]}
         >
           <View style={styles.animatedTruck}>

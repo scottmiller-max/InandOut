@@ -42,7 +42,7 @@ interface ChatBubble {
 const STORE_URL = 'https://www.inandoutmovin.com/store';
 const SUPPORT_PHONE = '833-466-6881';
 const GREETING =
-  "Aloha! I'm Riley, your IN&OUT Moving assistant. 👋 I can help with a quick moving, hauling, or junk removal quote, book 2 hours of labor, check on your move, or answer any questions. What can I help you with today?";
+  "Aloha! I'm Riley, your IN&OUT Moving assistant. 👋 I can help with a quick moving, hauling, or handyman quote, book 2 hours of labor, check on your move, or answer any questions. What can I help you with today?";
 
 const QUICK_CHIPS: Array<{ label: string; msg?: string; store?: boolean }> = [
   { label: 'Get a quote', msg: "I'd like a moving quote" },
