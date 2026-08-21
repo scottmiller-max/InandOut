@@ -10,10 +10,15 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  Alert,
 } from 'react-native';
-import { X, Send } from 'lucide-react-native';
+import { X, Send, Camera } from 'lucide-react-native';
 import { sendToRiley, RileyMessage } from '@/services/rileyAI';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { databaseService } from '@/services/database';
+import { supabase } from '@/services/supabase';
 
 interface RileyChatModalProps {
   visible: boolean;
@@ -37,6 +42,8 @@ interface RileyChatModalProps {
 interface ChatBubble {
   text: string;
   isUser: boolean;
+  photoUri?: string;
+  photoPending?: boolean;
 }
 
 const SUPPORT_PHONE = '833-466-6881';
@@ -72,6 +79,7 @@ export const RileyChatModal: React.FC<RileyChatModalProps> = ({
   const [messages, setMessages] = useState<ChatBubble[]>([{ text: GREETING, isUser: false }]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -126,6 +134,75 @@ export const RileyChatModal: React.FC<RileyChatModalProps> = ({
     }
   };
 
+  const handlePickPhoto = async (source: 'camera' | 'library') => {
+    if (!contextData?.userId) {
+      Alert.alert('Sign in required', 'Please sign in to attach photos.');
+      return;
+    }
+
+    try {
+      const permission =
+        source === 'camera'
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission needed', 'Please allow access so you can attach a photo.');
+        return;
+      }
+
+      const result =
+        source === 'camera'
+          ? await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 })
+          : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const uri = result.assets[0].uri;
+      setMessages((prev) => [...prev, { text: '', isUser: true, photoUri: uri, photoPending: true }]);
+      setUploadingPhoto(true);
+
+      const { data: customerRow } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', contextData.userId)
+        .maybeSingle();
+
+      const uploaded = await databaseService.uploadUserPhoto({
+        userId: contextData.userId,
+        customerId: customerRow?.id,
+        uri,
+        photoType: 'item',
+        jobId: contextData?.jobId,
+        moveId: contextData?.moveId,
+        description: 'Attached via Riley chat',
+      });
+
+      setUploadingPhoto(false);
+      setMessages((prev) => prev.map((m) => (m.photoUri === uri ? { ...m, photoPending: false } : m)));
+
+      if (!uploaded) {
+        setMessages((prev) => [
+          ...prev,
+          { text: "That photo didn't upload. Please try again.", isUser: false },
+        ]);
+        return;
+      }
+
+      ask("I've attached a photo for you to see.");
+    } catch (e) {
+      setUploadingPhoto(false);
+      Alert.alert('Upload failed', 'Something went wrong attaching that photo. Please try again.');
+    }
+  };
+
+  const promptAttach = () => {
+    Alert.alert('Add a photo', 'Choose a source', [
+      { text: 'Camera', onPress: () => handlePickPhoto('camera') },
+      { text: 'Photo Library', onPress: () => handlePickPhoto('library') },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
   const handleSend = () => {
     const v = inputText.trim();
     if (!v) return;
@@ -174,7 +251,18 @@ export const RileyChatModal: React.FC<RileyChatModalProps> = ({
         >
           {messages.map((msg, idx) => (
             <View key={idx} style={[styles.messageBubble, msg.isUser ? styles.userBubble : styles.aiBubble]}>
-              <Text style={[styles.messageText, msg.isUser ? styles.userText : styles.aiText]}>{msg.text}</Text>
+              {msg.photoUri ? (
+                <View>
+                  <Image source={{ uri: msg.photoUri }} style={styles.photoBubbleImage} resizeMode="cover" />
+                  {msg.photoPending && (
+                    <View style={styles.photoUploadingOverlay}>
+                      <ActivityIndicator size="small" color="#ffffff" />
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <Text style={[styles.messageText, msg.isUser ? styles.userText : styles.aiText]}>{msg.text}</Text>
+              )}
             </View>
           ))}
           {isSending && (
@@ -193,7 +281,25 @@ export const RileyChatModal: React.FC<RileyChatModalProps> = ({
           ))}
         </View>
 
+        {!contextData?.userId && (
+          <Text style={styles.attachHint}>Sign in to attach photos.</Text>
+        )}
+
         <View style={styles.inputContainer}>
+          {contextData?.userId && (
+            <TouchableOpacity
+              style={styles.attachButton}
+              onPress={promptAttach}
+              disabled={uploadingPhoto}
+              accessibilityLabel="Attach photo"
+            >
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="#00783C" />
+              ) : (
+                <Camera size={20} color="#00783C" />
+              )}
+            </TouchableOpacity>
+          )}
           <TextInput
             style={styles.input}
             value={inputText}
@@ -354,6 +460,10 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     backgroundColor: '#dbe6df',
   },
+  attachButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#e8f3ec', justifyContent: 'center', alignItems: 'center', marginRight: 8 },
+  attachHint: { fontSize: 11, color: '#8a988f', textAlign: 'center', paddingBottom: 6, backgroundColor: '#ffffff', fontFamily: 'Inter-Regular' },
+  photoBubbleImage: { width: 160, height: 160, borderRadius: 12 },
+  photoUploadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   footer: {
     fontSize: 10.5,
     color: '#8a988f',
