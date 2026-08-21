@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { PageContainer } from '@/components/PageContainer';
-import { User, Settings, LogOut, Mail, Phone, MapPin, Calendar, Shield, Bell } from 'lucide-react-native';
+import { User, Settings, LogOut, Mail, Phone, MapPin, Calendar, Shield, Bell, Image as ImageIcon, ChevronRight } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
 import { DateTimeDisplay } from '@/components/DateTimeDisplay';
@@ -12,8 +12,10 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { RileyWidget } from '@/components/RileyWidget';
 import { NotificationPreferences } from '@/components/NotificationPreferences';
 import { profileService } from '@/services/profileService';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, signOut } = useAuth();
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -179,6 +181,19 @@ export default function ProfileScreen() {
         {/* Documents */}
         <View style={styles.section}>
           <DocumentsSection />
+        </View>
+
+        {/* Photos */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Photos</Text>
+          <View style={styles.settingsCard}>
+            <TouchableOpacity style={styles.settingsItem} onPress={() => router.push('/gallery')}>
+              <ImageIcon size={20} color="#64748b" />
+              <Text style={styles.settingsText}>Photo Gallery</Text>
+              <View style={{ flex: 1 }} />
+              <ChevronRight size={18} color="#cbd5e1" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Payment Information */}

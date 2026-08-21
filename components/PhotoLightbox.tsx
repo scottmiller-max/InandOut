@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Modal, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, ZoomIn, ZoomOut, RotateCw } from 'lucide-react-native';
-import { PinchGestureHandler } from 'react-native-gesture-handler';
+import { PinchGestureHandler, PinchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedGestureHandler,
   useAnimatedStyle,
@@ -28,7 +28,7 @@ export default function PhotoLightbox({
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
-  const pinchHandler = useAnimatedGestureHandler({
+  const pinchHandler = useAnimatedGestureHandler<PinchGestureHandlerGestureEvent>({
     onStart: () => {
       // Store initial values
     },

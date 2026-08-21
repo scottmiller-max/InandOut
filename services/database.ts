@@ -65,6 +65,7 @@ export interface CustomerPhoto {
   id: string;
   userId: string;
   moveId?: string;
+  jobId?: string;
   photoUrl: string;
   photoType: 'room' | 'item' | 'damage' | 'inventory';
   description?: string;
@@ -72,6 +73,9 @@ export interface CustomerPhoto {
   isBeforePhoto: boolean;
   fileSize?: number;
   createdAt: string;
+  jobMoveDate?: string | null;
+  jobFromAddress?: string | null;
+  jobToAddress?: string | null;
 }
 
 export const databaseService = {
@@ -226,6 +230,117 @@ export const databaseService = {
     } catch (error) {
       console.error('Get user photos error:', error);
       return [];
+    }
+  },
+
+  getGalleryPhotos: async (userId: string): Promise<CustomerPhoto[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('customer_photos')
+        .select('*, jobs(move_date, from_address, from_city, to_address, to_city)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map((photo: any) => ({
+        id: photo.id,
+        userId: photo.user_id,
+        moveId: photo.move_id,
+        jobId: photo.job_id,
+        photoUrl: photo.photo_url,
+        photoType: photo.photo_type,
+        description: photo.description,
+        roomType: photo.room_type,
+        isBeforePhoto: photo.is_before_photo,
+        fileSize: photo.file_size,
+        createdAt: photo.created_at,
+        jobMoveDate: photo.jobs?.move_date ?? null,
+        jobFromAddress: photo.jobs
+          ? [photo.jobs.from_address, photo.jobs.from_city].filter(Boolean).join(', ')
+          : null,
+        jobToAddress: photo.jobs
+          ? [photo.jobs.to_address, photo.jobs.to_city].filter(Boolean).join(', ')
+          : null,
+      }));
+    } catch (error) {
+      console.error('Get gallery photos error:', error);
+      return [];
+    }
+  },
+
+  uploadUserPhoto: async (params: {
+    userId: string;
+    customerId?: string;
+    uri: string;
+    photoType?: 'room' | 'item' | 'damage' | 'inventory';
+    description?: string;
+    jobId?: string;
+    moveId?: string;
+  }): Promise<CustomerPhoto | null> => {
+    try {
+      const { userId, customerId, uri, photoType = 'item', description, jobId, moveId } = params;
+
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const rawExt = (uri.split('.').pop() || 'jpg').split('?')[0].toLowerCase();
+      const ext = rawExt.length <= 4 ? rawExt : 'jpg';
+      const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('customer-photos')
+        .upload(path, blob, {
+          contentType: blob.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data, error } = await supabase
+        .from('customer_photos')
+        .insert({
+          user_id: userId,
+          customer_id: customerId || null,
+          job_id: jobId || null,
+          move_id: moveId || null,
+          photo_url: path,
+          photo_type: photoType,
+          description: description || null,
+          file_size: blob.size,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: data.id,
+        userId: data.user_id,
+        moveId: data.move_id,
+        jobId: data.job_id,
+        photoUrl: data.photo_url,
+        photoType: data.photo_type,
+        description: data.description,
+        roomType: data.room_type,
+        isBeforePhoto: data.is_before_photo,
+        fileSize: data.file_size,
+        createdAt: data.created_at,
+      };
+    } catch (error) {
+      console.error('Upload user photo error:', error);
+      return null;
+    }
+  },
+
+  getPhotoSignedUrl: async (path: string, expiresInSeconds = 3600): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('customer-photos')
+        .createSignedUrl(path, expiresInSeconds);
+      if (error) throw error;
+      return data?.signedUrl || null;
+    } catch (error) {
+      console.error('Get signed photo url error:', error);
+      return null;
     }
   },
 
