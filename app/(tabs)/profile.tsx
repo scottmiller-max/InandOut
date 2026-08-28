@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { PageContainer } from '@/components/PageContainer';
-import { User, Settings, LogOut, Mail, Phone, MapPin, Calendar, Shield, Bell, Image as ImageIcon, ChevronRight } from 'lucide-react-native';
+import { User, Settings, LogOut, Mail, Phone, MapPin, Calendar, Shield, Bell, Image as ImageIcon, ChevronRight, Trash2 } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/services/supabase';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
 import { DateTimeDisplay } from '@/components/DateTimeDisplay';
 import { MovePreferencesCard } from '@/components/MovePreferencesCard';
@@ -20,6 +21,7 @@ export default function ProfileScreen() {
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEmailBanner, setShowEmailBanner] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -61,6 +63,68 @@ export default function ProfileScreen() {
             }
           }
         }
+      ]
+    );
+  };
+
+  // Apple App Store Guideline 5.1.1(v): an account created in the app must be
+  // deletable from inside the app. Two-step confirmation so it can't be hit by
+  // accident, but no barriers that would look like we're discouraging it.
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      "This permanently deletes your account and signs you out.\n\nYour saved details and photos are removed. Records of jobs we've already completed are kept for our accounting, with your personal information erased from them.\n\nThis can't be undone.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you sure?',
+              'This is your last chance to cancel. Deleting your account cannot be reversed.',
+              [
+                { text: 'Keep My Account', style: 'cancel' },
+                {
+                  text: 'Delete Account',
+                  style: 'destructive',
+                  onPress: async () => {
+                    setDeleting(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke('delete-account', {
+                        method: 'POST',
+                      });
+
+                      if (error || (data && (data as any).error)) {
+                        const message =
+                          (data as any)?.error ||
+                          'We could not delete your account just now. Please try again, or call us at 833-466-6881.';
+                        setDeleting(false);
+                        Alert.alert('Something went wrong', message);
+                        return;
+                      }
+
+                      // The login no longer exists, so clear the local session too.
+                      try {
+                        await signOut();
+                      } catch {
+                        // Session is already invalid server-side; nothing more to do.
+                      }
+                      Alert.alert('Account deleted', 'Your account has been deleted. Thank you for using IN&OUT Moving.');
+                    } catch (err) {
+                      console.error('Delete account error:', err);
+                      setDeleting(false);
+                      Alert.alert(
+                        'Something went wrong',
+                        'We could not delete your account just now. Please try again, or call us at 833-466-6881.'
+                      );
+                    }
+                  },
+                },
+              ]
+            );
+          },
+        },
       ]
     );
   };
@@ -227,7 +291,21 @@ export default function ProfileScreen() {
               <LogOut size={20} color="#dc2626" />
               <Text style={[styles.settingsText, styles.signOutText]}>Sign Out</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.settingsItem}
+              onPress={handleDeleteAccount}
+              disabled={deleting}
+            >
+              <Trash2 size={20} color="#dc2626" />
+              <Text style={[styles.settingsText, styles.signOutText]}>
+                {deleting ? 'Deleting account…' : 'Delete Account'}
+              </Text>
+            </TouchableOpacity>
           </View>
+          <Text style={styles.deleteHint}>
+            Deleting your account removes your saved details and photos. Completed job
+            records are kept for our accounting with your personal information erased.
+          </Text>
         </View>
 
         {/* App Info */}
@@ -430,6 +508,14 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     color: '#dc2626',
+  },
+  deleteHint: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontFamily: 'Inter-Regular',
+    lineHeight: 17,
+    marginTop: 10,
+    paddingHorizontal: 4,
   },
   appVersion: {
     fontSize: 12,

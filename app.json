@@ -16,14 +16,25 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.inandout.moving"
+      "bundleIdentifier": "com.inandout.moving",
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "IN&OUT Moving saves job photos to your library when you choose to download them.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.inandout.moving"
+      "package": "com.inandout.moving",
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
@@ -36,7 +47,27 @@
         {
           "origin": "https://app.inandoutmovin.com/"
         }
-      ]
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "IN&OUT Moving uses your camera so you can take photos of your items and rooms to attach to a quote or job."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "IN&OUT Moving needs access to your photos so you can attach pictures of your items to a quote or job.",
+          "cameraPermission": "IN&OUT Moving uses your camera so you can take photos of your items and rooms to attach to a quote or job."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "IN&OUT Moving uses your location to show your crew's live position and estimated arrival on moving day."
+        }
+      ],
+      "expo-notifications"
     ],
     "scheme": "inout-moving",
     "experiments": {
