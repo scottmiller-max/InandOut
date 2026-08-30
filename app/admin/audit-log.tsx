@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useRouter } from 'expo-router';
 import { PageContainer } from '@/components/PageContainer';
 import { supabase } from '@/services/supabase';
+import { roleService } from '@/services/roles';
 import { ArrowLeft, FileText, CheckCircle2, XCircle } from 'lucide-react-native';
 
 interface AuditEntry {
@@ -32,12 +33,8 @@ export default function AdminAuditLogScreen() {
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        const { data: myRole } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userData.user.id)
-          .maybeSingle();
-        setCurrentUserRole(myRole?.role || null);
+        const role = await roleService.getUserRole(userData.user.id);
+        setCurrentUserRole(role);
       }
 
       const { data, error } = await supabase
@@ -152,7 +149,7 @@ export default function AdminAuditLogScreen() {
               {filteredEntries.length === 0 ? (
                 <View style={styles.emptyCard}>
                   <FileText size={20} color="#94a3b8" />
-                  <Text style={styles.emptyText}>No audit events yet.</Text>
+                  <Text style={styles.emptyText}>No activity recorded yet.</Text>
                   <Text style={styles.emptySubtext}>
                     Actions like sending quotes, confirming bookings, and role changes will show up here.
                   </Text>
