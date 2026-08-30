@@ -17,7 +17,7 @@ import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, userRole, initializing } = useAuth();
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEmailBanner, setShowEmailBanner] = useState(false);
@@ -275,6 +275,14 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Settings & Security</Text>
           <View style={styles.settingsCard}>
+            {!initializing && userRole && ['master_admin', 'admin', 'dispatcher'].includes(userRole) && (
+              <TouchableOpacity style={styles.settingsItem} onPress={() => router.push('/admin')}>
+                <Shield size={20} color="#64748b" />
+                <Text style={styles.settingsText}>Admin CRM</Text>
+                <View style={{ flex: 1 }} />
+                <ChevronRight size={18} color="#cbd5e1" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.settingsItem}>
               <Settings size={20} color="#64748b" />
               <Text style={styles.settingsText}>Account Settings</Text>
