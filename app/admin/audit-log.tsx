@@ -89,7 +89,7 @@ export default function AdminAuditLogScreen() {
     return entries.filter((e) => e.action_category === activeCategory);
   }, [entries, activeCategory]);
 
-  const canView = currentUserRole === 'master_admin';
+  const canView = currentUserRole === 'master_admin' || currentUserRole === 'admin';
 
   if (loading) {
     return (
@@ -124,7 +124,7 @@ export default function AdminAuditLogScreen() {
           {!canView ? (
             <View style={styles.restrictedCard}>
               <FileText size={20} color="#94a3b8" />
-              <Text style={styles.restrictedText}>Only master admins can view the audit log.</Text>
+              <Text style={styles.restrictedText}>Only master admins and admins can view the audit log.</Text>
             </View>
           ) : (
             <>

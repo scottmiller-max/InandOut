@@ -1,27 +1,146 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
-import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PageContainer } from '@/components/PageContainer';
-import { Users, Search, Star, Calendar, DollarSign, Phone, Mail, MapPin, X, Eye } from 'lucide-react-native';
-import { CRMCustomerData } from '@/services/crm';
+import { Users, Search, Calendar, DollarSign, Phone, Mail, MapPin, X, AlertCircle } from 'lucide-react-native';
+import { databaseService, CRMCustomer } from '@/services/database';
 import { GlobalSignOutButton } from '@/components/GlobalSignOutButton';
 import { DateTimeDisplay } from '@/components/DateTimeDisplay';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import DUMMY_CUSTOMERS from '@/fixtures/dummyCustomers';
+
+const YELP_PLACEHOLDER = '@yelp-lead.placeholder';
+
+function isPlaceholderEmail(email: string): boolean {
+  return email.endsWith(YELP_PLACEHOLDER);
+}
+
+function formatEmail(email: string): string {
+  if (!email || isPlaceholderEmail(email)) return 'Yelp lead - no email';
+  return email;
+}
 
 export default function CRMScreen() {
-  const [customers, setCustomers] = useState<CRMCustomerData[]>(DUMMY_CUSTOMERS);
+  const [customers, setCustomers] = useState<CRMCustomer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState<CRMCustomerData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CRMCustomer | null>(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
 
+  const loadCustomers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const { data, error: err } = await databaseService.getCRMCustomers();
+    if (err) {
+      setError(err);
+    } else {
+      setCustomers(data);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadCustomers();
+  }, [loadCustomers]);
+
   const filteredCustomers = customers.filter(customer =>
-    `${customer.firstName} ${customer.lastName} ${customer.email}`.toLowerCase().includes(searchQuery.toLowerCase())
+    `${customer.fullName} ${customer.email} ${customer.phone}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleViewCustomer = (customer: CRMCustomerData) => {
+  const handleViewCustomer = (customer: CRMCustomer) => {
     setSelectedCustomer(customer);
     setShowCustomerModal(true);
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.centerState}>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={styles.centerStateText}>Loading customers...</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.centerState}>
+          <AlertCircle size={48} color="#dc2626" />
+          <Text style={styles.errorTitle}>Failed to load customers</Text>
+          <Text style={styles.errorMessage}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadCustomers}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (customers.length === 0) {
+      return (
+        <View style={styles.centerState}>
+          <Users size={64} color="#cbd5e1" />
+          <Text style={styles.centerStateText}>No customers yet</Text>
+        </View>
+      );
+    }
+
+    if (filteredCustomers.length === 0) {
+      return (
+        <View style={styles.centerState}>
+          <Search size={48} color="#cbd5e1" />
+          <Text style={styles.centerStateText}>No customers match your search</Text>
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView style={styles.customerList} showsVerticalScrollIndicator={false}>
+        {filteredCustomers.map((customer) => (
+          <TouchableOpacity
+            key={customer.id}
+            style={styles.customerCard}
+            onPress={() => handleViewCustomer(customer)}
+          >
+            <View style={styles.customerHeader}>
+              <View style={styles.customerInfo}>
+                <Text style={styles.customerName}>{customer.fullName}</Text>
+                <Text style={styles.customerEmail}>{formatEmail(customer.email)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.customerDetails}>
+              {customer.phone ? (
+                <View style={styles.detailItem}>
+                  <Phone size={16} color="#64748b" />
+                  <Text style={styles.detailText}>{customer.phone}</Text>
+                </View>
+              ) : null}
+              {customer.city ? (
+                <View style={styles.detailItem}>
+                  <MapPin size={16} color="#64748b" />
+                  <Text style={styles.detailText}>
+                    {customer.city}{customer.state ? `, ${customer.state}` : ''}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
+            <View style={styles.jobSummary}>
+              <View style={styles.summaryItem}>
+                <Calendar size={16} color="#2563eb" />
+                <Text style={styles.summaryLabel}>Jobs:</Text>
+                <Text style={styles.summaryValue}>{customer.jobsCount}</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <DollarSign size={16} color="#059669" />
+                <Text style={styles.summaryLabel}>Spent:</Text>
+                <Text style={styles.summaryValue}>${customer.totalSpent.toLocaleString()}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    );
   };
 
   return (
@@ -41,91 +160,19 @@ export default function CRMScreen() {
           </View>
         </View>
 
-        {/* Search */}
         <View style={styles.searchContainer}>
           <Search size={20} color="#64748b" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search customers..."
+            placeholder="Search by name, email or phone..."
             placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
 
-        {/* Customer List */}
-        <ScrollView style={styles.customerList} showsVerticalScrollIndicator={false}>
-          {filteredCustomers.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Users size={64} color="#cbd5e1" />
-              <Text style={styles.emptyText}>No customers found</Text>
-            </View>
-          ) : (
-            filteredCustomers.map((customer) => (
-              <TouchableOpacity
-                key={customer.id}
-                style={styles.customerCard}
-                onPress={() => handleViewCustomer(customer)}
-              >
-                <View style={styles.customerHeader}>
-                  <View style={styles.customerInfo}>
-                    <Text style={styles.customerName}>
-                      {customer.firstName} {customer.lastName}
-                    </Text>
-                    <Text style={styles.customerEmail}>{customer.email}</Text>
-                  </View>
-                  {customer.averageRating > 0 && (
-                    <View style={styles.customerStats}>
-                      <View style={styles.ratingContainer}>
-                        <Star size={16} color="#f59e0b" fill="#f59e0b" />
-                        <Text style={styles.ratingText}>{customer.averageRating.toFixed(1)}</Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
+        {renderContent()}
 
-                <View style={styles.customerDetails}>
-                  <View style={styles.detailItem}>
-                    <Phone size={16} color="#64748b" />
-                    <Text style={styles.detailText}>{customer.phone}</Text>
-                  </View>
-                  <View style={styles.detailItem}>
-                    <MapPin size={16} color="#64748b" />
-                    <Text style={styles.detailText}>
-                      {customer.city}, {customer.state}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.jobSummary}>
-                  <View style={styles.summaryItem}>
-                    <Calendar size={16} color="#2563eb" />
-                    <Text style={styles.summaryLabel}>Jobs:</Text>
-                    <Text style={styles.summaryValue}>{customer.totalJobs}</Text>
-                  </View>
-                  <View style={styles.summaryItem}>
-                    <DollarSign size={16} color="#059669" />
-                    <Text style={styles.summaryLabel}>Spent:</Text>
-                    <Text style={styles.summaryValue}>${customer.totalSpent}</Text>
-                  </View>
-                </View>
-
-                {customer.latestReview && (
-                  <View style={styles.reviewPreview}>
-                    <Text style={styles.reviewText} numberOfLines={2}>
-                      "{customer.latestReview.customerComments}"
-                    </Text>
-                    <Text style={styles.reviewDate}>
-                      {new Date(customer.latestReview.reviewDate).toLocaleDateString()}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))
-          )}
-        </ScrollView>
-
-        {/* Customer Details Modal */}
         <Modal
           visible={showCustomerModal}
           animationType="slide"
@@ -135,89 +182,54 @@ export default function CRMScreen() {
           {selectedCustomer && (
             <SafeAreaView style={styles.modalContainer}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  {selectedCustomer.firstName} {selectedCustomer.lastName}
-                </Text>
+                <Text style={styles.modalTitle}>{selectedCustomer.fullName}</Text>
                 <TouchableOpacity onPress={() => setShowCustomerModal(false)}>
                   <X size={24} color="#64748b" />
                 </TouchableOpacity>
               </View>
 
               <ScrollView style={styles.modalContent}>
-                {/* Customer Info Card */}
                 <View style={styles.customerInfoCard}>
                   <Text style={styles.cardTitle}>Contact Information</Text>
                   <View style={styles.infoGrid}>
                     <View style={styles.infoItem}>
                       <Mail size={20} color="#2563eb" />
-                      <Text style={styles.infoText}>{selectedCustomer.email}</Text>
+                      <Text style={styles.infoText}>{formatEmail(selectedCustomer.email)}</Text>
                     </View>
-                    <View style={styles.infoItem}>
-                      <Phone size={20} color="#2563eb" />
-                      <Text style={styles.infoText}>{selectedCustomer.phone}</Text>
-                    </View>
-                    <View style={styles.infoItem}>
-                      <MapPin size={20} color="#2563eb" />
-                      <Text style={styles.infoText}>
-                        {selectedCustomer.address}, {selectedCustomer.city}, {selectedCustomer.state}{' '}
-                        {selectedCustomer.zipCode}
-                      </Text>
-                    </View>
+                    {selectedCustomer.phone ? (
+                      <View style={styles.infoItem}>
+                        <Phone size={20} color="#2563eb" />
+                        <Text style={styles.infoText}>{selectedCustomer.phone}</Text>
+                      </View>
+                    ) : null}
+                    {selectedCustomer.city ? (
+                      <View style={styles.infoItem}>
+                        <MapPin size={20} color="#2563eb" />
+                        <Text style={styles.infoText}>
+                          {selectedCustomer.city}{selectedCustomer.state ? `, ${selectedCustomer.state}` : ''}
+                        </Text>
+                      </View>
+                    ) : null}
+                    {selectedCustomer.source ? (
+                      <View style={styles.infoItem}>
+                        <Users size={20} color="#2563eb" />
+                        <Text style={styles.infoText}>Source: {selectedCustomer.source}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 </View>
 
-                {/* Jobs Card */}
-                {selectedCustomer.jobs && selectedCustomer.jobs.length > 0 && (
-                  <View style={styles.jobsCard}>
-                    <Text style={styles.cardTitle}>Jobs ({selectedCustomer.jobs.length})</Text>
-                    {selectedCustomer.jobs.map((job) => (
-                      <View key={job.id} style={styles.jobItem}>
-                        <View style={styles.jobHeader}>
-                          <Text style={styles.jobNumber}>{job.jobNumber}</Text>
-                          <View
-                            style={[
-                              styles.statusBadge,
-                              job.status === 'completed' && styles.completedBadge,
-                              job.status === 'in_progress' && styles.inProgressBadge,
-                              job.status === 'scheduled' && styles.scheduledBadge,
-                            ]}
-                          >
-                            <Text style={styles.statusText}>{job.status.replace('_', ' ')}</Text>
-                          </View>
-                        </View>
-                        <Text style={styles.jobDate}>{job.jobDate}</Text>
-                        <Text style={styles.jobService}>{job.serviceType.replace('_', ' ')}</Text>
-                        <Text style={styles.jobCost}>
-                          ${job.actualCost || job.estimatedCost}
-                        </Text>
-                      </View>
-                    ))}
+                <View style={styles.summaryCard}>
+                  <Text style={styles.cardTitle}>Job Summary</Text>
+                  <View style={styles.modalSummaryRow}>
+                    <Text style={styles.modalSummaryLabel}>Total Jobs</Text>
+                    <Text style={styles.modalSummaryValue}>{selectedCustomer.jobsCount}</Text>
                   </View>
-                )}
-
-                {/* Reviews Card */}
-                {selectedCustomer.reviews && selectedCustomer.reviews.length > 0 && (
-                  <View style={styles.reviewsCard}>
-                    <Text style={styles.cardTitle}>Reviews ({selectedCustomer.reviews.length})</Text>
-                    {selectedCustomer.reviews.map((review) => (
-                      <View key={review.id} style={styles.reviewItem}>
-                        <View style={styles.reviewHeader}>
-                          <View style={styles.reviewRating}>
-                            <Star size={20} color="#f59e0b" fill="#f59e0b" />
-                            <Text style={styles.ratingText}>{review.overallRating.toFixed(1)}</Text>
-                          </View>
-                          <Text style={styles.reviewDate}>
-                            {new Date(review.reviewDate).toLocaleDateString()}
-                          </Text>
-                        </View>
-                        <View style={styles.reviewComments}>
-                          <Text style={styles.commentsTitle}>Customer Comments:</Text>
-                          <Text style={styles.commentsText}>{review.customerComments}</Text>
-                        </View>
-                      </View>
-                    ))}
+                  <View style={styles.modalSummaryRow}>
+                    <Text style={styles.modalSummaryLabel}>Total Spent</Text>
+                    <Text style={styles.modalSummaryValue}>${selectedCustomer.totalSpent.toLocaleString()}</Text>
                   </View>
-                )}
+                </View>
               </ScrollView>
             </SafeAreaView>
           )}
@@ -288,21 +300,50 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     fontFamily: 'Inter-Regular',
   },
-  customerList: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  emptyContainer: {
+  centerState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 100,
+    padding: 32,
+    gap: 8,
   },
-  emptyText: {
+  centerStateText: {
     fontSize: 16,
     color: '#64748b',
     fontFamily: 'Inter-Regular',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#dc2626',
+    fontFamily: 'Inter-SemiBold',
+    marginTop: 12,
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#64748b',
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  retryButton: {
     marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
+  },
+  customerList: {
+    flex: 1,
+    paddingHorizontal: 20,
   },
   customerCard: {
     backgroundColor: '#ffffff',
@@ -336,20 +377,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontFamily: 'Inter-Regular',
   },
-  customerStats: {
-    alignItems: 'flex-end',
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1e293b',
-    fontFamily: 'Inter-SemiBold',
-    marginLeft: 8,
-  },
   customerDetails: {
     marginBottom: 12,
   },
@@ -371,7 +398,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
-    marginBottom: 12,
   },
   summaryItem: {
     flexDirection: 'row',
@@ -389,23 +415,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1e293b',
     fontFamily: 'Inter-SemiBold',
-  },
-  reviewPreview: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: 12,
-  },
-  reviewText: {
-    fontSize: 14,
-    color: '#374151',
-    fontFamily: 'Inter-Regular',
-    fontStyle: 'italic',
-    marginBottom: 6,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#94a3b8',
-    fontFamily: 'Inter-Regular',
   },
   modalContainer: {
     flex: 1,
@@ -463,7 +472,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
-  jobsCard: {
+  summaryCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
@@ -474,106 +483,23 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  jobItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    paddingBottom: 16,
-    marginBottom: 16,
-  },
-  jobHeader: {
+  modalSummaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
-  jobNumber: {
+  modalSummaryLabel: {
+    fontSize: 14,
+    color: '#64748b',
+    fontFamily: 'Inter-Medium',
+  },
+  modalSummaryValue: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1e293b',
     fontFamily: 'Inter-SemiBold',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  completedBadge: {
-    backgroundColor: '#d1fae5',
-  },
-  inProgressBadge: {
-    backgroundColor: '#fef3c7',
-  },
-  scheduledBadge: {
-    backgroundColor: '#dbeafe',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#374151',
-    fontFamily: 'Inter-Medium',
-    textTransform: 'capitalize',
-  },
-  jobDate: {
-    fontSize: 14,
-    color: '#64748b',
-    fontFamily: 'Inter-Regular',
-    marginBottom: 4,
-  },
-  jobService: {
-    fontSize: 14,
-    color: '#2563eb',
-    fontFamily: 'Inter-Medium',
-    marginBottom: 4,
-    textTransform: 'capitalize',
-  },
-  jobCost: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#059669',
-    fontFamily: 'Inter-SemiBold',
-  },
-  reviewsCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  reviewItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    paddingBottom: 16,
-    marginBottom: 16,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  reviewRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  reviewComments: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: 12,
-  },
-  commentsTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    fontFamily: 'Inter-Medium',
-    marginBottom: 6,
-  },
-  commentsText: {
-    fontSize: 14,
-    color: '#64748b',
-    fontFamily: 'Inter-Regular',
-    lineHeight: 20,
   },
 });

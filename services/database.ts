@@ -78,7 +78,61 @@ export interface CustomerPhoto {
   jobToAddress?: string | null;
 }
 
+export interface CRMCustomer {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string | null;
+  state: string | null;
+  source: string | null;
+  lastInteractionAt: string | null;
+  createdAt: string;
+  jobsCount: number;
+  totalSpent: number;
+}
+
 export const databaseService = {
+  // CRM
+  getCRMCustomers: async (): Promise<{ data: CRMCustomer[]; error: string | null }> => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, full_name, email, phone, city, state, source, last_interaction_at, created_at, jobs(status, actual_total, estimated_total)')
+        .order('last_interaction_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const customers: CRMCustomer[] = (data || []).map((row: any) => {
+        const jobs = row.jobs || [];
+        const totalSpent = jobs
+          .filter((j: any) => j.status === 'completed')
+          .reduce((sum: number, j: any) => sum + (j.actual_total ?? j.estimated_total ?? 0), 0);
+
+        return {
+          id: row.id,
+          fullName: row.full_name || 'Unknown',
+          email: row.email || '',
+          phone: row.phone || '',
+          city: row.city || null,
+          state: row.state || null,
+          source: row.source || null,
+          lastInteractionAt: row.last_interaction_at || null,
+          createdAt: row.created_at,
+          jobsCount: jobs.length,
+          totalSpent: Math.round(totalSpent),
+        };
+      });
+
+      return { data: customers, error: null };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error('Get CRM customers error:', error);
+      return { data: [], error: msg };
+    }
+  },
+
   // Users
   getUser: async (userId: string): Promise<User | null> => {
     try {
